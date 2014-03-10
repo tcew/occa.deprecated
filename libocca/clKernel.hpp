@@ -55,6 +55,9 @@ public:
 
   char          *name;
   char          *source;
+  size_t        source_size;
+  char          *binary;
+  size_t        binary_size;
   cl_device_id  *device;
   cl_context    *context;
   cl_command_queue      *queue;
@@ -73,9 +76,39 @@ public:
     }
 
     stat(filename, &statbuf);
-    source = (char *) malloc(statbuf.st_size + 1);
-    fread(source, statbuf.st_size, 1, fh);
-    source[statbuf.st_size] = '\0';
+    source_size = statbuf.st_size;
+    source = (char *) malloc(source_size + 1);
+    fread(source, source_size, 1, fh);
+    source[source_size] = '\0';
+
+  }
+
+  void load_program_binary(const char *filename) {
+
+    struct stat statbuf;
+    FILE *fh = fopen(filename, "rb");
+    if (fh == 0){
+      printf("Failed to open: %s\n", filename);
+      throw 1;
+    }
+
+    stat(filename, &statbuf);
+    binary_size = statbuf.st_size;
+    binary = (char *) malloc(binary_size + 1);
+    fread(binary, binary_size, 1, fh);
+    binary[binary_size] = '\0';
+
+  }
+
+  void store_program_binary(const char *filename) {
+
+    FILE *fh = fopen(filename, "wb");
+    if (fh == 0){
+      printf("Failed to open: %s\n", filename);
+      throw 1;
+    }
+
+    fwrite(binary, binary_size, 1, fh);
 
   }
 
@@ -103,7 +136,7 @@ public:
 
     load_program_source(sourcefilename);
 
-    program = clCreateProgramWithSource(*context, 1, (const char **) & source, (size_t*) NULL, &err);
+    program = clCreateProgramWithSource(*context, 1, (const char **) &source, &source_size, &err);
 
     if (!program){
       printf("Error: Failed to create compute program!\n");
@@ -120,6 +153,53 @@ public:
     printf("all_flags = %s\n", all_flags);
 
     err = clBuildProgram(program, 1, device, all_flags, (void (*)(cl_program, void*))  NULL, NULL);
+
+    char *build_log;
+    size_t ret_val_size;
+    err = clGetProgramBuildInfo(program, *device, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
+
+    build_log = (char*) malloc(ret_val_size+1);
+    err = clGetProgramBuildInfo(program, *device, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, (size_t*) NULL);
+
+    // to be carefully, terminate with \0
+    // there's no information in the reference whether the string is 0 terminated or not
+    build_log[ret_val_size] = '\0';
+
+    fprintf(stderr, "%s", build_log );
+
+    kernel = clCreateKernel(program, functionname, &err);
+    if (! kernel || err != CL_SUCCESS){
+      printf("Error: Failed to create compute kernel!\n");
+      throw 1;
+    }
+  }
+
+  clKernel(cl_context *in_context, cl_device_id *in_device, cl_command_queue *in_queue,
+	     const char *binaryfilename, const char *functionname){
+
+    int err;
+
+    for(int i=0;i<3;++i){
+      local[i] = 1;
+      global[i] = 1;
+    }
+
+    context = in_context;
+    device  = in_device;
+    queue   = in_queue;
+
+    name = strdup(functionname);
+
+    load_program_binary(binaryfilename);
+
+    program = clCreateProgramWithBinary(*context, 1, device, &binary_size, (const unsigned char **) &binary, (cl_int *) NULL, &err);
+
+    if (!program){
+      printf("Error: Failed to create compute program!\n");
+      throw 1;
+    }
+
+    err = clBuildProgram(program, 1, device, (const char *) NULL, (void (*)(cl_program, void*))  NULL, NULL);
 
     char *build_log;
     size_t ret_val_size;
