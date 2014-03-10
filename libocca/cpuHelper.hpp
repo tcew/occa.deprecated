@@ -79,6 +79,11 @@ public:
     }
   }
 
+  cpuFunction loadKernelFromBinary(const string sourceFilename, const string functionName){
+#warning Needs to be implemented
+    return cpuFunction(sourceFilename.c_str(), functionName.c_str(), "");
+  }
+
   void *createBuffer(size_t sz, void *data){
 
     memUsage += sz;

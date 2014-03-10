@@ -81,7 +81,7 @@ struct occaEvent {
 };
 
 class occaMemory {
- public:
+public:
 
   occaModelTypes model;
   occaModelTypes mother;
@@ -418,7 +418,7 @@ class occaMemory {
 
 
 class occaKernel {
- private:
+private:
   occaModelTypes model;
   occaModelTypes mother;
 
@@ -438,7 +438,7 @@ class occaKernel {
 #endif
 
   int global[3], local[3];
- public:
+public:
 
   double bandWidth;
   int numCalls;
@@ -465,6 +465,8 @@ class occaKernel {
 
 
   }
+
+  //---[ Source Kernel ]----------------
 
 #if OCCA_USE_OPENCL==1
   occaKernel(clHelper *_cl, string filename, string kernelname, string defines, string flags){
@@ -573,6 +575,109 @@ class occaKernel {
   }
 #endif
 
+  //---[ Binary Kernel ]----------------
+
+#if OCCA_USE_OPENCL==1
+  occaKernel(clHelper *_cl, string filename, string kernelname){
+
+    model = OpenCL;
+
+    cl = _cl;
+
+    bandWidth = 0.;
+    numCalls = 0;
+
+    clfn = cl->loadKernelFromBinary(filename, kernelname);
+
+#if OCCA_USE_CPU==1
+    cpu = NULL;
+#endif
+
+#if OCCA_USE_CUDA==1
+    cu = NULL;
+#endif
+
+    mother = model;
+
+  }
+#endif
+
+
+#if OCCA_USE_CUDA==1
+  occaKernel(cuHelper *_cu, string filename, string kernelname){
+
+    model = CUDA;
+
+    cu = _cu;
+
+    bandWidth = 0.;
+    numCalls = 0;
+
+    cufn = cu->loadKernelFromBinary(filename, kernelname);
+
+#if OCCA_USE_CPU==1
+    cpu = NULL;
+#endif
+
+#if OCCA_USE_OPENCL==1
+    cl = NULL;
+#endif
+
+    mother = model;
+  }
+#endif
+
+#if OCCA_USE_CPU==1
+  occaKernel(cpuHelper *_cpu, string filename, string kernelname){
+
+    model = CPU;
+
+    cpu = _cpu;
+
+    bandWidth = 0.;
+    numCalls = 0;
+
+    cpufn = cpu->loadKernelFromBinary(filename, kernelname);
+
+#if OCCA_USE_CUDA==1
+    cu = NULL;
+#endif
+
+#if OCCA_USE_OPENCL==1
+    cl = NULL;
+#endif
+
+    mother = model;
+  }
+#endif
+
+#if OCCA_USE_ALL==1
+  occaKernel(occaModelTypes _mother,  clHelper *_cl, cuHelper *_cu, cpuHelper *_cpu, string filename, string kernelname){
+
+    model = All;
+    mother = _mother;
+
+    bandWidth = 0.;
+    numCalls = 0;
+
+#if OCCA_USE_OPENCL==1
+    cl  = _cl;
+    if(model & OpenCL) clfn  =  cl->loadKernelFromBinary(filename, kernelname);
+#endif
+
+#if OCCA_USE_CUDA==1
+    cu  = _cu;
+    if(model & CUDA)   cufn  =  cu->loadKernelFromBinary(filename, kernelname);
+#endif
+
+#if OCCA_USE_CPU==1
+    cpu = _cpu;
+    if(model & CPU)    cpufn = cpu->loadKernelFromBinary(filename, kernelname);
+#endif
+
+  }
+#endif
+
   void setThreadArray(size_t *_global, size_t *_local, int _dim){
 #if OCCA_USE_OPENCL==1
     if(model & OpenCL) clfn.setThreadArray(_global, _local, _dim);
@@ -666,7 +771,7 @@ class occaKernel {
 
 
 class occa {
- private:
+private:
 
 #if OCCA_USE_OPENCL==1
   clHelper *cl;
@@ -685,7 +790,7 @@ class occa {
 
   int memoryCount;
 
- public:
+public:
 
   occa(){
 
@@ -713,7 +818,7 @@ class occa {
 
 
   inline occa& operator = (const occa &o){
-  //  void operator = (const occa &o){
+    //  void operator = (const occa &o){
 #if OCCA_USE_OPENCL==1
     cl = o.cl;
 #endif
@@ -879,6 +984,32 @@ class occa {
 
 #if OCCA_USE_ALL==1
     case All:     fn = new occaKernel(mother, cl, cu, cpu, filename, kernelname, defFile, flags); break;
+#endif
+    default: cout << "Model not valid\n"; throw 1;
+    }
+
+    return *fn;
+
+  }
+
+  occaKernel &loadKernelFromBinary(string filename, string kernelname){
+    occaKernel *fn;
+
+    switch(model){
+#if OCCA_USE_OPENCL==1
+    case OpenCL:  fn = new occaKernel(cl,  filename, kernelname); break;
+#endif
+
+#if OCCA_USE_CUDA==1
+    case CUDA:    fn = new occaKernel(cu,  filename, kernelname); break;
+#endif
+
+#if OCCA_USE_CPU==1
+    case CPU:     fn = new occaKernel(cpu, filename, kernelname); break;
+#endif
+
+#if OCCA_USE_ALL==1
+    case All:     fn = new occaKernel(mother, cl, cu, cpu, filename, kernelname); break;
 #endif
     default: cout << "Model not valid\n"; throw 1;
     }

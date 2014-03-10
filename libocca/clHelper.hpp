@@ -212,6 +212,11 @@ public:
     }
   }
 
+  clFunction loadKernelFromBinary(const string sourceFilename, const string functionName){
+#warning Needs to be implemented
+    return clFunction(&context, &device, &queue, sourceFilename.c_str(), functionName.c_str(), "");
+  }
+
   cl_mem createBuffer(size_t sz, void *data){
 
     cl_int _err;
