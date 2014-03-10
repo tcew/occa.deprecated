@@ -59,7 +59,43 @@ public:
   }
 
   cpuFunction(const string sourcefilename, string functionname, const string flags){
+    buildFromSource(sourcefilename, functionname, flags);
+  }
 
+  cpuFunction(const cpuFunction &c){
+    *this = c;
+  }
+
+  cpuFunction& operator = (const cpuFunction &c){
+    dim = c.dim;
+
+    dim = (dim > 3 || dim < 0) ? 1:dim;
+
+    for(int i = 0; i < 6; i++)
+      dims[i] = c.dims[i];
+
+    for(int i = 0; i < dim; i++){
+      local[i]  = c.local[i];
+      global[i] = c.global[i];
+    }
+
+    for(int i = dim; i < 3; i++){
+      local[i]  = 1;
+      global[i] = 1;
+    }
+
+    name = c.name;
+    source = c.source;
+    functionName = c.functionName;
+    kernel = c.kernel;
+
+    ev_start = c.ev_start;
+    ev_end = c.ev_end;
+
+    return *this;
+  }
+
+  cpuFunction& buildFromSource(const string sourcefilename, string functionname, const string flags){
     int err;
 
     char cmd[BUFSIZ];
@@ -97,6 +133,17 @@ public:
 
     void *obj = dlopen(objectName, RTLD_NOW);
     kernel    = (voidFunction) dlsym(obj, functionName);
+
+    return *this;
+  }
+
+  cpuFunction& buildFromBinary(const string binaryFilename, string functionname, const string flags){
+    functionName = strdup(functionname.c_str());
+
+    void *obj = dlopen(objectName, RTLD_NOW);
+    kernel    = (voidFunction) dlsym(obj, functionName);
+
+    return *this;
   }
 
   void setThreadArray(size_t *in_global, size_t *in_local, int in_dim){

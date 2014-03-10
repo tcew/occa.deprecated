@@ -119,7 +119,7 @@ public:
       tmpKernelContents << "__kernel void " << tmpKernelName << "(const int x){}";
       tmpKernelContents.close();
 
-      clFunction tmpKernel = buildKernel(tmpKernelFileName, tmpKernelName);
+      clFunction tmpKernel = buildKernelFromSource(tmpKernelFileName, tmpKernelName);
 
       preferredWGM = tmpKernel.preferredWorkgroupMultiple();
     }
@@ -163,7 +163,7 @@ public:
     return &queue;
   }
 
-  clFunction buildKernel(const string sourcefilename, const string functionname, string defines = "", string flags = ""){
+  clFunction buildKernelFromSource(const string sourcefilename, const string functionname, string defines = "", string flags = ""){
     if(flags == "")
       flags = "-cl-finite-math-only -cl-mad-enable -cl-fast-relaxed-math -cl-no-signed-zeros ";
 
@@ -212,9 +212,9 @@ public:
     }
   }
 
-  clFunction loadKernelFromBinary(const string sourceFilename, const string functionName){
-#warning Needs to be implemented
-    return clFunction(&context, &device, &queue, sourceFilename.c_str(), functionName.c_str(), "");
+  clFunction buildKernelFromBinary(const string sourceFilename, const string functionName){
+    clFunction kernel;
+    return kernel.buildFromBinary(&context, &device, &queue, sourceFilename.c_str(), functionName.c_str(), "");
   }
 
   cl_mem createBuffer(size_t sz, void *data){

@@ -33,7 +33,7 @@ public:
     memUsage = 0;
   }
 
-  cpuFunction buildKernel(const string sourcefilename, const string functionname, string defines = "", string flags = ""){
+  cpuFunction buildKernelFromSource(const string sourcefilename, const string functionname, string defines = "", string flags = ""){
     if(defines != ""){
       int start = 0;
 
@@ -79,9 +79,9 @@ public:
     }
   }
 
-  cpuFunction loadKernelFromBinary(const string sourceFilename, const string functionName){
-#warning Needs to be implemented
-    return cpuFunction(sourceFilename.c_str(), functionName.c_str(), "");
+  cpuFunction buildKernelFromBinary(const string sourceFilename, const string functionName){
+    cpuFunction kernel;
+    return kernel.buildFromBinary(sourceFilename.c_str(), functionName.c_str(), "");
   }
 
   void *createBuffer(size_t sz, void *data){

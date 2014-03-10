@@ -106,7 +106,7 @@ public:
     return &context;
   }
 
-  cuFunction buildKernel(const string sourcefilename, const string functionname, string defines = "", string flags = ""){
+  cuFunction buildKernelFromSource(const string sourcefilename, const string functionname, string defines = "", string flags = ""){
     if(defines != ""){
       int start = 0;
 
@@ -152,9 +152,9 @@ public:
     }
   }
 
-  cuFunction loadKernelFromBinary(const string sourceFilename, const string functionName){
-#warning Needs to be implemented
-    return cuFunction(&context, &device, sourceFilename.c_str(), functionName.c_str(), "");
+  cuFunction buildKernelFromBinary(const string sourceFilename, const string functionName){
+    cuFunction kernel;
+    return kernel.buildFromBinary(&context, &device, sourceFilename.c_str(), functionName.c_str(), "");
   }
 
   CUdeviceptr createBuffer(size_t sz, void *h_a){

@@ -26,6 +26,14 @@
    To disable OpenMP (for compilers like clang):
        flags += -DOCCA_USING_OMP=0
 
+* Setup Options
+  The file [setuprc] contains options for the fd simulation
+  For different models, you can use:
+
+     [MODEL] OpenCL
+     [MODEL] CUDA
+     [MODEL] CPU
+
 * Visualization shortcuts
 
     |------------------------+-----------------------------------------------|

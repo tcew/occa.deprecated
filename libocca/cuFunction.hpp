@@ -52,8 +52,45 @@ public:
   }
 
   cuFunction(CUcontext *in_context, CUdevice *in_device,
-	     const char *sourcefilename, const char *functionname, const char *flags){
+             const char *sourcefilename, const char *functionname, const char *flags){
+    buildFromSource(in_context, in_device, sourcefilename, functionname, flags);
+  }
 
+  cuFunction(const cuFunction &c){
+    *this = c;
+  }
+
+  cuFunction& operator = (const cuFunction &c){
+    dim = c.dim;
+
+    dim = (dim > 3 || dim < 0) ? 1:dim;
+
+    for(int i = 0; i < dim; i++){
+      local[i]  = c.local[i];
+      global[i] = c.global[i];
+    }
+
+    for(int i = dim; i < 3; i++){
+      local[i]  = 1;
+      global[i] = 1;
+    }
+
+    kernel = c.kernel;
+    module = c.module;
+
+    name = c.name;
+    source = c.source;
+    device = c.device;
+    context = c.context;
+
+    ev_start = c.ev_start;
+    ev_end = c.ev_end;
+
+    cudims = c.cudims;
+  }
+
+  cuFunction& buildFromSource(CUcontext *in_context, CUdevice *in_device,
+                              const char *sourcefilename, const char *functionname, const char *flags){
     CUresult err;
 
     for(int i=0;i<3;++i){
@@ -97,7 +134,12 @@ public:
     cuEventCreate(&ev_end, CU_EVENT_DEFAULT);
 
     checkCudaErrors( cuMemAlloc(&cudims, 3*sizeof(int)) );
+  }
 
+  cuFunction& buildFromBinary(CUcontext *in_context, CUdevice *in_device,
+                              const char *sourcefilename, const char *functionname, const char *flags){
+#warning Have not implemented cuFunction buildFromBinary
+    return *this;
   }
 
   void setThreadArray(size_t *in_global, size_t *in_local, int in_dim){
