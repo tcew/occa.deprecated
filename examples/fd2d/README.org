@@ -1,5 +1,8 @@
 * Compiling
 
+  Create a sym-link to libocca in the working directory:
+     ln -s ../../libocca .
+
   make
 
 ** Supported languages/standards
