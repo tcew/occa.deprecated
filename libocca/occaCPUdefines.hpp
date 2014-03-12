@@ -38,18 +38,20 @@ typedef struct doo4 { double x,y,z,w; } double4;
 
 // splitting these loops with openmp is problematic because of the global loop variables
 // the global loop variables are used to locate private members.
-#define occaInnerFor0 for(int occaInnerId0 = 0; occaInnerId0 < occaInnerDim0; ++occaInnerId0)
-#define occaInnerFor1 for(int occaInnerId1 = 0; occaInnerId1 < occaInnerDim1; ++occaInnerId1)
-#define occaInnerFor2 for(int occaInnerId2 = 0; occaInnerId2 < occaInnerDim2; ++occaInnerId2)
+#define occaInnerFor0 for(occaInnerId0 = 0; occaInnerId0 < occaInnerDim0; ++occaInnerId0)
+#define occaInnerFor1 for(occaInnerId1 = 0; occaInnerId1 < occaInnerDim1; ++occaInnerId1)
+#define occaInnerFor2 for(occaInnerId2 = 0; occaInnerId2 < occaInnerDim2; ++occaInnerId2)
 
 #define occaInnerFor occaInnerFor2 occaInnerFor1 occaInnerFor0
 
 #if OCCA_USING_OMP
 #  define occaOuterFor0                                                 \
-  _Pragma("omp parallel for firstprivate(occaDims0,occaDims1,occaDims2)") \
+  int occaInnerId0, occaInnerId1, occaInnerId2;                         \
+  _Pragma("omp parallel for firstprivate(occaInnerId0,occaInnerId1,occaInnerId2,occaDims0,occaDims1,occaDims2)") \
   for(int occaOuterId0 = 0; occaOuterId0 < occaOuterDim0; ++occaOuterId0)
 #else
 #  define occaOuterFor0                                                 \
+  int occaInnerId0, occaInnerId1, occaInnerId2;                         \
   for(int occaOuterId0 = 0; occaOuterId0 < occaOuterDim0; ++occaOuterId0)
 #endif
 
@@ -81,7 +83,7 @@ typedef struct doo4 { double x,y,z,w; } double4;
 #define occaConst    const
 #define occaConstant
 
-#define occaKernelInfoArg const int * __restrict __ occaDims
+#define occaKernelInfoArg const int * __restrict__ occaDims
 #define occaFunctionInfoArg const int *  __restrict__ occaDims, \
     const int occaInnerDim0,                                    \
     const int occaInnerDim1,                                    \
@@ -112,14 +114,11 @@ public:
   const int dim0, dim1, dim2;
   const int &id0, &id1, &id2;
 
-#if 0
-  T *data;
-#else
-  // warning hard code (256 max threads)
+  // Warning hard code (256 max threads)
   T data[512][S] occaAligned;
-#endif
 
-  occaPrivateClass(int _dim0, int _dim1, int _dim2, int &_id0, int &_id1, int &_id2) :
+  occaPrivateClass(const int _dim0, const int _dim1, const int _dim2,
+                   const int &_id0, const int &_id1, const int &_id2) :
     dim0(_dim0), dim1(_dim1), dim2(_dim2),
     id0(_id0), id1(_id1), id2(_id2) {
   }
