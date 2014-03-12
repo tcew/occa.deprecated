@@ -83,26 +83,14 @@ typedef struct doo4 { double x,y,z,w; } double4;
 #define occaConst    const
 #define occaConstant
 
-#if 1
-#define occaKernelInfoArg const int *occaDims
-#define occaFunctionInfoArg const int *occaDims,\
-int occaInnerId0,				\
-int occaInnerId1, \
-int occaInnerId2
-#define occaFunctionInfo  occaDims,\
-occaInnerId0, \
-occaInnerId1, \
-occaInnerId2
+#define occaKernelInfoArg const int * __restrict __ occaDims
+#define occaFunctionInfoArg const int *  __restrict__ occaDims, \
+    const int occaInnerDim0,                                    \
+    const int occaInnerDim1,                                    \
+    const int occaInnerDim2
 
 #define occaKernel extern "C"
 #define occaFunction
-#else
-#define occaKernel(KERNEL, ...) extern "C" void KERNEL(const int *occaDims, __VA_ARGS__)
-
-#define occaFunction(FUNCTION, ...) void FUNCTION(const int *occaDims, int occaInnerId0, int occaInnerId1, int occaInnerId2, __VA_ARGS__)
-
-#define occaFunctionCall(FUNCTION, ...) FUNCTION(occaDims, occaInnerId0, occaInnerId1, occaInnerId2, __VA_ARGS__)
-#endif
 
 #define occaLocalMemFence
 #define occaGlobalMemFence
@@ -180,10 +168,10 @@ public:
   }
 };
 
-#define occaPrivateArray(type, name, sz) \
+#define occaPrivateArray(type, name, sz)                                \
   occaPrivateClass<type,sz> name(occaDims[0], occaDims[1], occaDims[2], occaInnerId0, occaInnerId1, occaInnerId2);
 
-#define occaPrivate(type, name) \
+#define occaPrivate(type, name)                                         \
   occaPrivateClass<type,1> name(occaDims[0], occaDims[1], occaDims[2], occaInnerId0, occaInnerId1, occaInnerId2);
 
 
