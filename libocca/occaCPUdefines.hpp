@@ -38,20 +38,18 @@ typedef struct doo4 { double x,y,z,w; } double4;
 
 // splitting these loops with openmp is problematic because of the global loop variables
 // the global loop variables are used to locate private members.
-#define occaInnerFor0 for(occaInnerId0 = 0; occaInnerId0 < occaInnerDim0; ++occaInnerId0)
-#define occaInnerFor1 for(occaInnerId1 = 0; occaInnerId1 < occaInnerDim1; ++occaInnerId1)
-#define occaInnerFor2 for(occaInnerId2 = 0; occaInnerId2 < occaInnerDim2; ++occaInnerId2)
+#define occaInnerFor0 for(int occaInnerId0 = 0; occaInnerId0 < occaInnerDim0; ++occaInnerId0)
+#define occaInnerFor1 for(int occaInnerId1 = 0; occaInnerId1 < occaInnerDim1; ++occaInnerId1)
+#define occaInnerFor2 for(int occaInnerId2 = 0; occaInnerId2 < occaInnerDim2; ++occaInnerId2)
 
 #define occaInnerFor occaInnerFor2 occaInnerFor1 occaInnerFor0
 
 #if OCCA_USING_OMP
 #  define occaOuterFor0                                                 \
-  int occaInnerId0 = 0, occaInnerId1 = 0, occaInnerId2 = 0;             \
-  _Pragma("omp parallel for firstprivate(occaInnerId0,occaInnerId1,occaInnerId2,occaDims0,occaDims1,occaDims2)") \
+  _Pragma("omp parallel for firstprivate(occaDims0,occaDims1,occaDims2)") \
   for(int occaOuterId0 = 0; occaOuterId0 < occaOuterDim0; ++occaOuterId0)
 #else
 #  define occaOuterFor0                                                 \
-  int occaInnerId0 = 0, occaInnerId1 = 0, occaInnerId2 = 0;             \
   for(int occaOuterId0 = 0; occaOuterId0 < occaOuterDim0; ++occaOuterId0)
 #endif
 
@@ -88,6 +86,11 @@ typedef struct doo4 { double x,y,z,w; } double4;
     const int occaInnerDim0,                                    \
     const int occaInnerDim1,                                    \
     const int occaInnerDim2
+
+#define occaFunctionInfo occaDims,              \
+    occaInnerDim0,                              \
+    occaInnerDim1,                              \
+    occaInnerDim2
 
 #define occaKernel extern "C"
 #define occaFunction
