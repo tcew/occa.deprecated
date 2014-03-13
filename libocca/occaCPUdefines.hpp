@@ -85,14 +85,14 @@ typedef struct doo4 { double x,y,z,w; } double4;
 
 #define occaKernelInfoArg const int * __restrict__ occaDims
 #define occaFunctionInfoArg const int *  __restrict__ occaDims, \
-    const int occaInnerDim0,                                    \
-    const int occaInnerDim1,                                    \
-    const int occaInnerDim2
+    int occaInnerId0,                                           \
+    int occaInnerId1,                                           \
+    int occaInnerId2
 
 #define occaFunctionInfo occaDims,              \
-    occaInnerDim0,                              \
-    occaInnerDim1,                              \
-    occaInnerDim2
+    occaInnerId0,                               \
+    occaInnerId1,                               \
+    occaInnerId2
 
 #define occaKernel extern "C"
 #define occaFunction

@@ -1,7 +1,7 @@
 # Default variables
 enableOpenCL = 1
-enableCUDA   = 0
-enableGL     = 1
+enableCUDA   = 1
+enableGL     = 0
 
 # Paths
 paths  = -I./$(sPath) -I./$(iPath)
