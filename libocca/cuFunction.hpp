@@ -185,6 +185,27 @@ public:
     }
   }
 
+  void enqueue(int argc, void* args[], size_t argssz[])
+  {
+    void *local_args[OCCA_MAX_NUM_ARGS+1];
+
+    if(argc > OCCA_MAX_NUM_ARGS){
+      printf("Too many arguements: %d", argc);
+      throw 1;
+    }
+
+    local_args[0] = &cudims;
+    for(int i = 0; i < argc; ++i)
+      local_args[i+1] = args[i];
+
+    cuEventRecord(ev_start,0);
+    cuLaunchKernel(kernel,
+                   global[0]/local[0], global[1]/local[1], 1,
+                   local[0], local[1], local[2],
+                   0, 0, local_args, 0);
+    cuEventRecord(ev_end,0);
+  }
+
   void tic(){
 
   }

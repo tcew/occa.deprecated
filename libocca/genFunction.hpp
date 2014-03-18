@@ -28,5 +28,6 @@ public:
 
   GEN_KERNEL_OPERATORS;
 
+  virtual void enqueue(int argc, void* args[], size_t argssz[]) = 0;
 };
 #endif

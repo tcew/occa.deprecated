@@ -172,6 +172,69 @@ public:
 
   CPU_KERNEL_OPERATORS;
 
+  void enqueue(int argc, void* args[], size_t argssz[]){
+#define OCCA_ARGS_1                 args[0]
+#define OCCA_ARGS_2  OCCA_ARGS_1  , args[1]
+#define OCCA_ARGS_3  OCCA_ARGS_2  , args[2]
+#define OCCA_ARGS_4  OCCA_ARGS_3  , args[3]
+#define OCCA_ARGS_5  OCCA_ARGS_4  , args[4]
+#define OCCA_ARGS_6  OCCA_ARGS_5  , args[5]
+#define OCCA_ARGS_7  OCCA_ARGS_6  , args[6]
+#define OCCA_ARGS_8  OCCA_ARGS_7  , args[7]
+#define OCCA_ARGS_9  OCCA_ARGS_8  , args[8]
+#define OCCA_ARGS_10 OCCA_ARGS_9  , args[9]
+#define OCCA_ARGS_11 OCCA_ARGS_10 , args[10]
+#define OCCA_ARGS_12 OCCA_ARGS_11 , args[11]
+#define OCCA_ARGS_13 OCCA_ARGS_12 , args[12]
+#define OCCA_ARGS_14 OCCA_ARGS_13 , args[13]
+#define OCCA_ARGS_15 OCCA_ARGS_14 , args[14]
+#define OCCA_ARGS_16 OCCA_ARGS_15 , args[15]
+#define OCCA_ARGS_17 OCCA_ARGS_16 , args[16]
+#define OCCA_ARGS_18 OCCA_ARGS_17 , args[17]
+#define OCCA_ARGS_19 OCCA_ARGS_18 , args[18]
+#define OCCA_ARGS_20 OCCA_ARGS_19 , args[19]
+
+#define E(N)                                                        \
+    case N:                                                         \
+     {                                                              \
+        tic();                                                      \
+        functionPointer##N tmpKernel = (functionPointer##N) kernel; \
+        tmpKernel(dims, OCCA_ARGS_##N);                             \
+        toc();                                                      \
+      }                                                             \
+      break;
+
+
+    switch(argc){
+      FOR_20(E)
+      default:
+        std::cerr << "Enqueue with the wrong number of arguments" << std::endl;
+    }
+#undef E
+
+#undef OCCA_ARGS_0
+#undef OCCA_ARGS_1
+#undef OCCA_ARGS_2
+#undef OCCA_ARGS_3
+#undef OCCA_ARGS_4
+#undef OCCA_ARGS_5
+#undef OCCA_ARGS_6
+#undef OCCA_ARGS_7
+#undef OCCA_ARGS_8
+#undef OCCA_ARGS_9
+#undef OCCA_ARGS_10
+#undef OCCA_ARGS_11
+#undef OCCA_ARGS_12
+#undef OCCA_ARGS_13
+#undef OCCA_ARGS_14
+#undef OCCA_ARGS_15
+#undef OCCA_ARGS_16
+#undef OCCA_ARGS_17
+#undef OCCA_ARGS_18
+#undef OCCA_ARGS_19
+#undef OCCA_ARGS_20
+  }
+
   void tic(){
 #ifdef        OS_LINUX
     clock_gettime(CLOCK_MONOTONIC, &ev_start);

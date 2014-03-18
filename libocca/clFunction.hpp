@@ -309,6 +309,23 @@ public:
     }
   }
 
+  void enqueue(int argc, void* args[], size_t argssz[])
+  {
+    CL_CHECK(clSetKernelArg(kernel, 0, sizeof(cldims), &cldims));
+    for(int i = 0; i < argc; ++i)
+    {
+      if(argssz[i] > 0)
+      {
+        CL_CHECK(clSetKernelArg(kernel, i+1, argssz[i], args[i]));
+      }
+      else
+      {
+        CL_CHECK(clSetKernelArg(kernel, i+1, sizeof(cl_mem), args[i]));
+      }
+    }
+    run();
+  }
+
   void tic(){
 
   }
