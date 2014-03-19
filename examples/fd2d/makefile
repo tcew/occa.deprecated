@@ -8,7 +8,7 @@ paths  = -I./$(sPath) -I./$(iPath)
 paths += -I./$(occaSPath)
 paths += -I./include -I/opt/AMDAPP/include -I/usr/local/cuda/include -m64
 
-links = -L. -L./lib -L/usr/local/cuda/lib
+links = -L. -L/usr/local/cuda/lib
 
 flags = -Ddatafloat=float
 
