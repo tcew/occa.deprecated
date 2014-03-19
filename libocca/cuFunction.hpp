@@ -89,6 +89,14 @@ public:
     cudims = c.cudims;
   }
 
+#ifndef OCCA_CU_COMPILER
+#define OCCA_CU_COMPILER "nvcc"
+#endif
+
+#ifndef OCCA_CU_FLAGS
+#define OCCA_CU_FLAGS  "-ptx -I. -m64 -arch=sm_35 --compiler-options -O3 --use_fast_math "
+#endif
+
   cuFunction& buildFromSource(CUcontext *in_context, CUdevice *in_device,
                               const char *sourcefilename, const char *functionname, const char *flags){
     CUresult err;
@@ -106,10 +114,12 @@ public:
 
     sprintf(objectName, ".occa/%s_%d.ptx", functionname, pid);
 
-    sprintf(cmd, "cp %s .occa/%s_%d.cu ; nvcc %s -ptx -I.  .occa/%s_%d.cu -m64 -o %s -arch=sm_35 --compiler-options -O3 --use_fast_math ",
-	    sourcefilename, functionname, pid,
-	    flags,
-	    functionname, pid, objectName);
+    sprintf(cmd, "cp %s .occa/%s_%d.cu ; %s %s %s .occa/%s_%d.cu -o %s",
+        sourcefilename, functionname, pid,
+        OCCA_CU_COMPILER,
+        flags,
+        OCCA_CU_FLAGS,
+        functionname, pid, objectName);
 
     system(cmd);
 

@@ -95,6 +95,14 @@ public:
     return *this;
   }
 
+#ifndef OCCA_CPU_COMPILER
+#define OCCA_CPU_COMPILER "g++"
+#endif
+
+#ifndef OCCA_CPU_FLAGS
+#define OCCA_CPU_FLAGS  "-m64 -fopenmp -I. -x c++ -w -fPIC -shared -ldl -ftree-vectorizer-verbose=1 -O3 -mtune=native -ftree-vectorize -funroll-loops -fsplit-ivs-in-unroller -ffast-math"
+#endif
+
   cpuFunction& buildFromSource(const string sourcefilename, string functionname, const string flags){
     int err;
 
@@ -108,11 +116,7 @@ public:
 #endif
 
 #if 1
-        sprintf(cmd, "g++ %s -m64 "
-	    " -fopenmp -I. -x c++ -w -fPIC -shared %s -o %s  -ldl "
-            " -ftree-vectorizer-verbose=1"
-	    " -O3 -mtune=native -ftree-vectorize -funroll-loops -fsplit-ivs-in-unroller -ffast-math",
-	    flags.c_str(), sourcefilename.c_str(), objectName);
+    sprintf(cmd, "%s %s %s %s -o %s", OCCA_CPU_COMPILER, flags.c_str(), OCCA_CPU_FLAGS, sourcefilename.c_str(), objectName);
 #else
     sprintf(cmd, "icpc %s -m64 -fopenmp -O3 "
 	    " -I. -x c++ -w -fPIC -shared %s -o %s  -ldl"
