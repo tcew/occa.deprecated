@@ -578,6 +578,7 @@ target_link_libraries(occa ${CMAKE_DL_LIBS})
 ## Examples
 ##
 add_subdirectory(examples/simple)
+add_subdirectory(examples/fd2d)
 
 
 ##
