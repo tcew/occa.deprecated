@@ -82,6 +82,10 @@ endif
 flags += -D OS_OSX=1
 links += -framework vecLib  -framework CoreServices
 
+ifeq ($(enableCUDA), 1)
+	links += -lcuda
+endif
+
 else #---[ LINUX ]----------------------
 
 flags += -D OS_LINUX=1
