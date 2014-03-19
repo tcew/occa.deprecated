@@ -1,0 +1,25 @@
+
+occaKernel void simple(occaKernelInfoArg,
+    occaPointer double * out,
+    double occaVariable a,
+    int occaVariable N){
+
+  occaOuterFor1{
+
+    occaOuterFor0{
+
+      int i = occaOuterId1;
+      int j = occaOuterId0;
+
+      occaInnerFor0{
+
+        int k = occaInnerId0;
+        int id = k + occaInnerDim0*j + occaInnerDim0*occaOuterDim0*i;
+
+        if(id < N)
+          out[id] = a;
+      }
+    }
+  }
+}
+
