@@ -87,6 +87,8 @@ public:
     ev_end = c.ev_end;
 
     cudims = c.cudims;
+
+    return *this;
   }
 
 #ifndef OCCA_CU_COMPILER
@@ -144,6 +146,8 @@ public:
     cuEventCreate(&ev_end, CU_EVENT_DEFAULT);
 
     checkCudaErrors( cuMemAlloc(&cudims, 3*sizeof(int)) );
+
+    return *this;
   }
 
   cuFunction& buildFromBinary(CUcontext *in_context, CUdevice *in_device,
