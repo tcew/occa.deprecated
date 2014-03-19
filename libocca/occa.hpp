@@ -19,6 +19,12 @@ using namespace std;
 using std::string;
 using std::ofstream;
 
+#ifdef OCCA_STRINGIFY_DEFINES
+#  include "occa/occaCPUdefinesString.h"
+#  include "occa/occaCUdefinesString.h"
+#  include "occa/occaCLdefinesString.h"
+#endif
+
 #if OCCA_MPI_ENABLED
 #  include <mpi.h>
 #endif
@@ -534,7 +540,11 @@ public:
     bandWidth = 0.;
     numCalls = 0;
 
+#ifdef OCCA_STRINGIFY_DEFINES
+    defines =  occaCLdefinesString + defines;
+#else
     defines = "#include \"libocca/occaCLdefines.hpp\"\n" + defines;
+#endif
 
     clfn = cl->buildKernelFromSource(filename, kernelname, defines, flags);
 
@@ -563,7 +573,11 @@ public:
     bandWidth = 0.;
     numCalls = 0;
 
+#ifdef OCCA_STRINGIFY_DEFINES
+    defines = occaCUdefinesString + defines;
+#else
     defines = "#include \"libocca/occaCUdefines.hpp\"\n" + defines;
+#endif
 
     cufn = cu->buildKernelFromSource(filename, kernelname, defines, flags);
 
@@ -595,7 +609,11 @@ public:
     defines = "#include <omp.h>\n" + defines;
 #endif
 
+#ifdef OCCA_STRINGIFY_DEFINES
+    defines = occaCPUdefinesString + defines;
+#else
     defines = "#include \"libocca/occaCPUdefines.hpp\"\n" + defines;
+#endif
 
     cpufn = cpu->buildKernelFromSource(filename, kernelname, defines, flags);
 
