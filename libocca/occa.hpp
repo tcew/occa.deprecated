@@ -591,6 +591,10 @@ public:
     bandWidth = 0.;
     numCalls = 0;
 
+#ifndef OCCA_DO_NOT_USE_OPENMP
+    defines = "#include <omp.h>\n" + defines;
+#endif
+
     defines = "#include \"libocca/occaCPUdefines.hpp\"\n" + defines;
 
     cpufn = cpu->buildKernelFromSource(filename, kernelname, defines, flags);

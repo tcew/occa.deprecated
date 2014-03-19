@@ -8,7 +8,6 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "math.h"
-#include "omp.h"
 
 int occaDims0 = 0, occaDims1 = 0, occaDims2 = 0;
 
