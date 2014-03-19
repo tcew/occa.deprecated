@@ -8,7 +8,7 @@ paths  = -I./$(sPath) -I./$(iPath)
 paths += -I./$(occaSPath)
 paths += -I./include -I/opt/AMDAPP/include -I/usr/local/cuda/include -m64
 
-links = -L. -L./lib -L/usr/local/cuda/lib
+links = -L. -L/usr/local/cuda/lib
 
 flags = -Ddatafloat=float
 
@@ -81,6 +81,10 @@ endif
 
 flags += -D OS_OSX=1
 links += -framework vecLib  -framework CoreServices
+
+ifeq ($(enableCUDA), 1)
+	links += -lcuda
+endif
 
 else #---[ LINUX ]----------------------
 

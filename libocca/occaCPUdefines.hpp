@@ -8,7 +8,6 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "math.h"
-#include "omp.h"
 
 int occaDims0 = 0, occaDims1 = 0, occaDims2 = 0;
 
@@ -77,6 +76,11 @@ typedef struct doo4 { double x,y,z,w; } double4;
 #define occaRestrict __restrict__
 
 #define occaVolatile
+
+// Not all compilers set __BIGGEST_ALIGNMENT__
+#ifndef __BIGGEST_ALIGNMENT__
+#define __BIGGEST_ALIGNMENT__ 32
+#endif
 
 #define occaAligned __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)))
 

@@ -19,6 +19,12 @@ using namespace std;
 using std::string;
 using std::ofstream;
 
+#ifdef OCCA_STRINGIFY_DEFINES
+#  include "occa/occaCPUdefinesString.h"
+#  include "occa/occaCUdefinesString.h"
+#  include "occa/occaCLdefinesString.h"
+#endif
+
 #if OCCA_MPI_ENABLED
 #  include <mpi.h>
 #endif
@@ -534,7 +540,11 @@ public:
     bandWidth = 0.;
     numCalls = 0;
 
+#ifdef OCCA_STRINGIFY_DEFINES
+    defines =  occaCLdefinesString + defines;
+#else
     defines = "#include \"libocca/occaCLdefines.hpp\"\n" + defines;
+#endif
 
     clfn = cl->buildKernelFromSource(filename, kernelname, defines, flags);
 
@@ -563,7 +573,11 @@ public:
     bandWidth = 0.;
     numCalls = 0;
 
+#ifdef OCCA_STRINGIFY_DEFINES
+    defines = occaCUdefinesString + defines;
+#else
     defines = "#include \"libocca/occaCUdefines.hpp\"\n" + defines;
+#endif
 
     cufn = cu->buildKernelFromSource(filename, kernelname, defines, flags);
 
@@ -591,7 +605,15 @@ public:
     bandWidth = 0.;
     numCalls = 0;
 
+#ifndef OCCA_DO_NOT_USE_OPENMP
+    defines = "#include <omp.h>\n" + defines;
+#endif
+
+#ifdef OCCA_STRINGIFY_DEFINES
+    defines = occaCPUdefinesString + defines;
+#else
     defines = "#include \"libocca/occaCPUdefines.hpp\"\n" + defines;
+#endif
 
     cpufn = cpu->buildKernelFromSource(filename, kernelname, defines, flags);
 
@@ -772,6 +794,52 @@ public:
   }
 
   OCCA_KERNEL_OPERATORS;
+
+  void enqueue(int argc, void* args[], size_t argssz[]){
+    void *local_args[OCCA_MAX_NUM_ARGS];
+
+    for(int i = 0; i < argc; ++i)
+    {
+      local_args[i] = args[i];
+    }
+
+#if OCCA_USE_OPENCL==1
+    for(int i = 0; i < argc; ++i)
+    {
+      if(argssz[i] == 0)
+      {
+        occaMemory * mem = (occaMemory *) args[i];
+        local_args[i] = (void*)&mem->clMem;
+      }
+    }
+    if(model & OpenCL) clfn.enqueue(argc, local_args, argssz);
+#endif
+
+#if OCCA_USE_CUDA==1
+    for(int i = 0; i < argc; ++i)
+    {
+      if(argssz[i] == 0)
+      {
+        occaMemory * mem = (occaMemory *) args[i];
+        local_args[i] = (void*)&mem->cuMem;
+      }
+    }
+    if(model & CUDA)   cufn.enqueue(argc, local_args, argssz);
+#endif
+
+#if OCCA_USE_CPU==1
+    for(int i = 0; i < argc; ++i)
+    {
+      if(argssz[i] == 0)
+      {
+        occaMemory * mem = (occaMemory *) args[i];
+        local_args[i] = (void*)mem->cpuMem;
+      }
+    }
+    if(model & CPU)   cpufn.enqueue(argc, local_args, argssz);
+#endif
+
+  }
 
   double elapsed(){
 

@@ -87,7 +87,17 @@ public:
     ev_end = c.ev_end;
 
     cudims = c.cudims;
+
+    return *this;
   }
+
+#ifndef OCCA_CU_COMPILER
+#define OCCA_CU_COMPILER "nvcc"
+#endif
+
+#ifndef OCCA_CU_FLAGS
+#define OCCA_CU_FLAGS  "-ptx -I. -m64 -arch=sm_35 --compiler-options -O3 --use_fast_math "
+#endif
 
   cuFunction& buildFromSource(CUcontext *in_context, CUdevice *in_device,
                               const char *sourcefilename, const char *functionname, const char *flags){
@@ -106,10 +116,12 @@ public:
 
     sprintf(objectName, ".occa/%s_%d.ptx", functionname, pid);
 
-    sprintf(cmd, "cp %s .occa/%s_%d.cu ; nvcc %s -ptx -I.  .occa/%s_%d.cu -m64 -o %s -arch=sm_35 --compiler-options -O3 --use_fast_math ",
-	    sourcefilename, functionname, pid,
-	    flags,
-	    functionname, pid, objectName);
+    sprintf(cmd, "cp %s .occa/%s_%d.cu ; %s %s %s .occa/%s_%d.cu -o %s",
+        sourcefilename, functionname, pid,
+        OCCA_CU_COMPILER,
+        flags,
+        OCCA_CU_FLAGS,
+        functionname, pid, objectName);
 
     system(cmd);
 
@@ -134,6 +146,8 @@ public:
     cuEventCreate(&ev_end, CU_EVENT_DEFAULT);
 
     checkCudaErrors( cuMemAlloc(&cudims, 3*sizeof(int)) );
+
+    return *this;
   }
 
   cuFunction& buildFromBinary(CUcontext *in_context, CUdevice *in_device,
@@ -183,6 +197,27 @@ public:
 	throw 1;
       }
     }
+  }
+
+  void enqueue(int argc, void* args[], size_t argssz[])
+  {
+    void *local_args[OCCA_MAX_NUM_ARGS+1];
+
+    if(argc > OCCA_MAX_NUM_ARGS){
+      printf("Too many arguements: %d", argc);
+      throw 1;
+    }
+
+    local_args[0] = &cudims;
+    for(int i = 0; i < argc; ++i)
+      local_args[i+1] = args[i];
+
+    cuEventRecord(ev_start,0);
+    cuLaunchKernel(kernel,
+                   global[0]/local[0], global[1]/local[1], 1,
+                   local[0], local[1], local[2],
+                   0, 0, local_args, 0);
+    cuEventRecord(ev_end,0);
   }
 
   void tic(){

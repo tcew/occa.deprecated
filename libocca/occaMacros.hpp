@@ -1,5 +1,7 @@
 #define EMPTY /**/
 
+#define OCCA_MAX_NUM_ARGS 20
+
 #define DUMMY_ARG_1(TYPE)                       TYPE arg1
 #define DUMMY_ARG_2(TYPE)  DUMMY_ARG_1(TYPE)  , TYPE arg2
 #define DUMMY_ARG_3(TYPE)  DUMMY_ARG_2(TYPE)  , TYPE arg3

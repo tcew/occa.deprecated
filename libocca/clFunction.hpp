@@ -124,6 +124,10 @@ public:
     return *this;
   }
 
+#ifndef OCCA_CL_FLAGS
+#define OCCA_CL_FLAGS "-cl-single-precision-constant -I. -cl-denorms-are-zero -cl-single-precision-constant -cl-fast-relaxed-math -cl-finite-math-only -cl-mad-enable  -cl-no-signed-zeros"
+#endif
+
   clFunction& buildFromSource(cl_context *in_context, cl_device_id *in_device, cl_command_queue *in_queue,
                               const char *sourcefilename, const char *functionname, const char *flags){
     firstTic = 1;
@@ -155,10 +159,10 @@ public:
     char all_flags[BUFSIZ*2];
     if(flags)
       //sprintf(all_flags, "-I. -cl-finite-math-only -cl-no-signed-zeros -cl-strict-aliasing %s", flags);
-      sprintf(all_flags, "-cl-single-precision-constant -I. -cl-denorms-are-zero -cl-single-precision-constant -cl-fast-relaxed-math -cl-finite-math-only -cl-mad-enable  -cl-no-signed-zeros %s", flags);
+      sprintf(all_flags, "%s %s", OCCA_CL_FLAGS, flags);
     //      sprintf(all_flags, "-I. %s", flags);
     else
-      sprintf(all_flags, "-cl-single-precision-constant -I.  -cl-denorms-are-zero -cl-single-precision-constant -cl-fast-relaxed-math -cl-finite-math-only -cl-mad-enable  -cl-no-signed-zeros ");
+      sprintf(all_flags, OCCA_CL_FLAGS);
     //      sprintf(all_flags, "-I. ");
 
     err = clBuildProgram(program, 1, device, all_flags, (void (*)(cl_program, void*))  NULL, NULL);
@@ -232,10 +236,10 @@ public:
     char all_flags[BUFSIZ*2];
     if(flags)
       //sprintf(all_flags, "-I. -cl-finite-math-only -cl-no-signed-zeros -cl-strict-aliasing %s", flags);
-      sprintf(all_flags, "-cl-single-precision-constant -I. -cl-denorms-are-zero -cl-single-precision-constant -cl-fast-relaxed-math -cl-finite-math-only -cl-mad-enable  -cl-no-signed-zeros %s", flags);
+      sprintf(all_flags, "%s %s", OCCA_CL_FLAGS, flags);
     //      sprintf(all_flags, "-I. %s", flags);
     else
-      sprintf(all_flags, "-cl-single-precision-constant -I.  -cl-denorms-are-zero -cl-single-precision-constant -cl-fast-relaxed-math -cl-finite-math-only -cl-mad-enable  -cl-no-signed-zeros ");
+      sprintf(all_flags, OCCA_CL_FLAGS);
     //      sprintf(all_flags, "-I. ");
 
     err = clBuildProgram(program, 1, device, all_flags, (void (*)(cl_program, void*))  NULL, NULL);
@@ -307,6 +311,23 @@ public:
         throw 1;
       }
     }
+  }
+
+  void enqueue(int argc, void* args[], size_t argssz[])
+  {
+    CL_CHECK(clSetKernelArg(kernel, 0, sizeof(cldims), &cldims));
+    for(int i = 0; i < argc; ++i)
+    {
+      if(argssz[i] > 0)
+      {
+        CL_CHECK(clSetKernelArg(kernel, i+1, argssz[i], args[i]));
+      }
+      else
+      {
+        CL_CHECK(clSetKernelArg(kernel, i+1, sizeof(cl_mem), args[i]));
+      }
+    }
+    run();
   }
 
   void tic(){

@@ -10,7 +10,6 @@
 #ifdef        OS_LINUX
 #  include <sys/time.h>
 #elif defined OS_OSX
-#  include <CoreServices/CoreServices.h>
 #  include <mach/mach_time.h>
 #else
 #  error "Not tested on Windows OS yet."
@@ -95,6 +94,14 @@ public:
     return *this;
   }
 
+#ifndef OCCA_CPU_COMPILER
+#define OCCA_CPU_COMPILER "g++"
+#endif
+
+#ifndef OCCA_CPU_FLAGS
+#define OCCA_CPU_FLAGS  "-m64 -fopenmp -I. -x c++ -w -fPIC -shared -ldl -ftree-vectorizer-verbose=1 -O3 -mtune=native -ftree-vectorize -funroll-loops -fsplit-ivs-in-unroller -ffast-math"
+#endif
+
   cpuFunction& buildFromSource(const string sourcefilename, string functionname, const string flags){
     int err;
 
@@ -108,11 +115,7 @@ public:
 #endif
 
 #if 1
-        sprintf(cmd, "g++ %s -m64 "
-	    " -fopenmp -I. -x c++ -w -fPIC -shared %s -o %s  -ldl "
-            " -ftree-vectorizer-verbose=1"
-	    " -O3 -mtune=native -ftree-vectorize -funroll-loops -fsplit-ivs-in-unroller -ffast-math",
-	    flags.c_str(), sourcefilename.c_str(), objectName);
+    sprintf(cmd, "%s %s %s %s -o %s", OCCA_CPU_COMPILER, flags.c_str(), OCCA_CPU_FLAGS, sourcefilename.c_str(), objectName);
 #else
     sprintf(cmd, "icpc %s -m64 -fopenmp -O3 "
 	    " -I. -x c++ -w -fPIC -shared %s -o %s  -ldl"
@@ -172,6 +175,69 @@ public:
 
   CPU_KERNEL_OPERATORS;
 
+  void enqueue(int argc, void* args[], size_t argssz[]){
+#define OCCA_ARGS_1                 args[0]
+#define OCCA_ARGS_2  OCCA_ARGS_1  , args[1]
+#define OCCA_ARGS_3  OCCA_ARGS_2  , args[2]
+#define OCCA_ARGS_4  OCCA_ARGS_3  , args[3]
+#define OCCA_ARGS_5  OCCA_ARGS_4  , args[4]
+#define OCCA_ARGS_6  OCCA_ARGS_5  , args[5]
+#define OCCA_ARGS_7  OCCA_ARGS_6  , args[6]
+#define OCCA_ARGS_8  OCCA_ARGS_7  , args[7]
+#define OCCA_ARGS_9  OCCA_ARGS_8  , args[8]
+#define OCCA_ARGS_10 OCCA_ARGS_9  , args[9]
+#define OCCA_ARGS_11 OCCA_ARGS_10 , args[10]
+#define OCCA_ARGS_12 OCCA_ARGS_11 , args[11]
+#define OCCA_ARGS_13 OCCA_ARGS_12 , args[12]
+#define OCCA_ARGS_14 OCCA_ARGS_13 , args[13]
+#define OCCA_ARGS_15 OCCA_ARGS_14 , args[14]
+#define OCCA_ARGS_16 OCCA_ARGS_15 , args[15]
+#define OCCA_ARGS_17 OCCA_ARGS_16 , args[16]
+#define OCCA_ARGS_18 OCCA_ARGS_17 , args[17]
+#define OCCA_ARGS_19 OCCA_ARGS_18 , args[18]
+#define OCCA_ARGS_20 OCCA_ARGS_19 , args[19]
+
+#define E(N)                                                        \
+    case N:                                                         \
+     {                                                              \
+        tic();                                                      \
+        functionPointer##N tmpKernel = (functionPointer##N) kernel; \
+        tmpKernel(dims, OCCA_ARGS_##N);                             \
+        toc();                                                      \
+      }                                                             \
+      break;
+
+
+    switch(argc){
+      FOR_20(E)
+      default:
+        std::cerr << "Enqueue with the wrong number of arguments" << std::endl;
+    }
+#undef E
+
+#undef OCCA_ARGS_0
+#undef OCCA_ARGS_1
+#undef OCCA_ARGS_2
+#undef OCCA_ARGS_3
+#undef OCCA_ARGS_4
+#undef OCCA_ARGS_5
+#undef OCCA_ARGS_6
+#undef OCCA_ARGS_7
+#undef OCCA_ARGS_8
+#undef OCCA_ARGS_9
+#undef OCCA_ARGS_10
+#undef OCCA_ARGS_11
+#undef OCCA_ARGS_12
+#undef OCCA_ARGS_13
+#undef OCCA_ARGS_14
+#undef OCCA_ARGS_15
+#undef OCCA_ARGS_16
+#undef OCCA_ARGS_17
+#undef OCCA_ARGS_18
+#undef OCCA_ARGS_19
+#undef OCCA_ARGS_20
+  }
+
   void tic(){
 #ifdef        OS_LINUX
     clock_gettime(CLOCK_MONOTONIC, &ev_start);
@@ -198,8 +264,18 @@ public:
       +    (double) (ev_end.tv_nsec - ev_start.tv_nsec)*1.0e-9;
 #elif defined OS_OSX
     const uint64_t timeTaken = (ev_end - ev_start);
-    const Nanoseconds nTime  = AbsoluteToNanoseconds(*(AbsoluteTime *) &timeTaken);
-    return ((double) 1e-9) * ((double) ( *((uint64_t*) &nTime) ));
+    static double scaling_factor = 0;
+    if (scaling_factor == 0)
+    {
+      mach_timebase_info_data_t info;
+      kern_return_t ret = mach_timebase_info(&info);
+      if (ret != 0)
+      {
+        std::cerr << "mach_timebase_info() failed: " << ret << std::endl;
+      }
+      scaling_factor = (double)info.numer / (double)info.denom;
+    }
+    return 1e-9 * scaling_factor * (double)timeTaken;
 #elif defined OS_WINDOWS
 #  error "Not tested on Windows OS yet."
 #endif

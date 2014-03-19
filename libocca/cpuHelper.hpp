@@ -159,8 +159,18 @@ public:
       +    (double) (ev_end.tv_nsec - ev_start.tv_nsec)*1.0e-9;
 #elif defined OS_OSX
     const uint64_t timeTaken = (ev_end - ev_start);
-    const Nanoseconds nTime  = AbsoluteToNanoseconds(*(AbsoluteTime *) &timeTaken);
-    return ((double) 1e-9) * ((double) ( *((uint64_t*) &nTime) ));
+    static double scaling_factor = 0;
+    if (scaling_factor == 0)
+    {
+      mach_timebase_info_data_t info;
+      kern_return_t ret = mach_timebase_info(&info);
+      if (ret != 0)
+      {
+        std::cerr << "mach_timebase_info() failed: " << ret << std::endl;
+      }
+      scaling_factor = (double)info.numer / (double)info.denom;
+    }
+    return 1e-9 * scaling_factor * (double)timeTaken;
 #elif defined OS_WINDOWS
 #  error "Not tested on Windows OS yet."
 #endif
