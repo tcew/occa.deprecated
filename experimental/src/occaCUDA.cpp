@@ -59,7 +59,7 @@ namespace occa {
   kernel_t<CUDA>::~kernel_t(){}
 
   template <>
-  kernel_t<CUDA>& kernel_t<CUDA>::buildFromSource(const std::string &filename,
+  kernel_t<CUDA>* kernel_t<CUDA>::buildFromSource(const std::string &filename,
                                                   const std::string &functionName_,
                                                   const kernelInfo &info_){
     OCCA_EXTRACT_DATA(CUDA, Kernel);
@@ -109,12 +109,12 @@ namespace occa {
     OCCA_CUDA_CHECK("Kernel (" + functionName + ") : Loading Function",
                     cuModuleGetFunction(&data_.function, data_.module, functionName.c_str()));
 
-    return *this;
+    return this;
   }
 
   template <>
-  kernel_t<CUDA>& kernel_t<CUDA>::buildFromBinary(const std::string &filename,
-                                                  const std::string &functionName_){
+  kernel_t<CUDA> kernel_t<CUDA>::buildFromBinary(const std::string &filename,
+                                                 const std::string &functionName_){
     OCCA_EXTRACT_DATA(CUDA, Kernel);
 
     functionName = functionName_;
@@ -125,7 +125,7 @@ namespace occa {
     OCCA_CUDA_CHECK("Kernel (" + functionName + ") : Loading Function",
                     cuModuleGetFunction(&data_.function, data_.module, functionName.c_str()));
 
-    return *this;
+    return this;
   }
 
   template <>
@@ -359,56 +359,56 @@ namespace occa {
   }
 
   template <>
-  kernel_v device_t<CUDA>::buildKernelFromSource(const std::string &filename,
+  kernel_v* device_t<CUDA>::buildKernelFromSource(const std::string &filename,
                                                  const std::string &functionName,
                                                  const kernelInfo &info_){
     OCCA_EXTRACT_DATA(CUDA, Device);
 
-    kernel_t<CUDA> k;
+    kernel_v *k = new kernel_t<CUDA>;
 
-    k.dev  = dev;
-    k.data = ::_mm_malloc(sizeof(CUDAKernelData_t), OCCA_MEM_ALIGN);
+    k->dev  = dev;
+    k->data = ::_mm_malloc(sizeof(CUDAKernelData_t), OCCA_MEM_ALIGN);
 
-    CUDAKernelData_t &kData_ = *((CUDAKernelData_t*) k.data);
+    CUDAKernelData_t &kData_ = *((CUDAKernelData_t*) k->data);
 
     kData_.device  = data_.device;
     kData_.context = data_.context;
 
-    k.buildFromSource(filename, functionName, info_);
+    k->buildFromSource(filename, functionName, info_);
     return k;
   }
 
   template <>
-  kernel_v device_t<CUDA>::buildKernelFromBinary(const std::string &filename,
+  kernel_v* device_t<CUDA>::buildKernelFromBinary(const std::string &filename,
                                                  const std::string &functionName){
     OCCA_EXTRACT_DATA(CUDA, Device);
 
-    kernel_t<CUDA> k;
+    kernel_v *k = new kernel_t<CUDA>;
 
-    k.dev  = dev;
-    k.data = ::_mm_malloc(sizeof(CUDAKernelData_t), OCCA_MEM_ALIGN);
+    k->dev  = dev;
+    k->data = ::_mm_malloc(sizeof(CUDAKernelData_t), OCCA_MEM_ALIGN);
 
-    CUDAKernelData_t &kData_ = *((CUDAKernelData_t*) k.data);
+    CUDAKernelData_t &kData_ = *((CUDAKernelData_t*) k->data);
 
     kData_.device  = data_.device;
     kData_.context = data_.context;
 
-    k.buildFromBinary(filename, functionName);
+    k->buildFromBinary(filename, functionName);
     return k;
   }
 
   template <>
-  memory_v device_t<CUDA>::malloc(const size_t bytes){
+  memory_v* device_t<CUDA>::malloc(const size_t bytes){
     OCCA_EXTRACT_DATA(CUDA, Device);
 
-    memory_t<CUDA> mem;
+    memory_v *mem = new memory_t<CUDA>;
 
-    mem.dev    = dev;
-    mem.handle = ::_mm_malloc(sizeof(CUdeviceptr), OCCA_MEM_ALIGN);
-    mem.size   = bytes;
+    mem->dev    = dev;
+    mem->handle = ::_mm_malloc(sizeof(CUdeviceptr), OCCA_MEM_ALIGN);
+    mem->size   = bytes;
 
     OCCA_CUDA_CHECK("Device: malloc",
-                    cuMemAlloc((CUdeviceptr*) mem.handle, bytes));
+                    cuMemAlloc((CUdeviceptr*) mem->handle, bytes));
 
     return mem;
   }

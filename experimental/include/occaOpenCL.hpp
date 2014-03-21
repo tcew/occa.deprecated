@@ -45,12 +45,12 @@ namespace occa {
   kernel_t<OpenCL>::kernel_t(const kernel_t<OpenCL> &k);
 
   template <>
-  kernel_t<OpenCL>& kernel_t<OpenCL>::buildFromSource(const std::string &filename,
+  kernel_t<OpenCL>* kernel_t<OpenCL>::buildFromSource(const std::string &filename,
                                                       const std::string &functionName_,
                                                       const kernelInfo &info_);
 
   template <>
-  kernel_t<OpenCL>& kernel_t<OpenCL>::buildFromBinary(const std::string &filename,
+  kernel_t<OpenCL>* kernel_t<OpenCL>::buildFromBinary(const std::string &filename,
                                                       const std::string &functionName_);
 
   template <>
@@ -142,16 +142,16 @@ namespace occa {
   void device_t<OpenCL>::freeStream(stream s);
 
   template <>
-  kernel_v device_t<OpenCL>::buildKernelFromSource(const std::string &filename,
-                                                   const std::string &functionName_,
-                                                   const kernelInfo &info_);
+  kernel_v* device_t<OpenCL>::buildKernelFromSource(const std::string &filename,
+                                                    const std::string &functionName_,
+                                                    const kernelInfo &info_);
 
   template <>
-  kernel_v device_t<OpenCL>::buildKernelFromBinary(const std::string &filename,
-                                                   const std::string &functionName_);
+  kernel_v* device_t<OpenCL>::buildKernelFromBinary(const std::string &filename,
+                                                    const std::string &functionName_);
 
   template <>
-  memory_v device_t<OpenCL>::malloc(const size_t bytes);
+  memory_v* device_t<OpenCL>::malloc(const size_t bytes);
 
   template <>
   int device_t<OpenCL>::simdWidth();

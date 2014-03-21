@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 
@@ -50,12 +51,12 @@ namespace occa {
   kernel_t<OpenMP>::kernel_t(const kernel_t<OpenMP> &k);
 
   template <>
-  kernel_t<OpenMP>& kernel_t<OpenMP>::buildFromSource(const std::string &filename,
+  kernel_t<OpenMP>* kernel_t<OpenMP>::buildFromSource(const std::string &filename,
                                                       const std::string &functionName_,
                                                       const kernelInfo &info_);
 
   template <>
-  kernel_t<OpenMP>& kernel_t<OpenMP>::buildFromBinary(const std::string &filename,
+  kernel_t<OpenMP>* kernel_t<OpenMP>::buildFromBinary(const std::string &filename,
                                                       const std::string &functionName_);
 
   template <>
@@ -147,16 +148,16 @@ namespace occa {
   void device_t<OpenMP>::freeStream(stream s);
 
   template <>
-  kernel_v device_t<OpenMP>::buildKernelFromSource(const std::string &filename,
-                                                   const std::string &functionName_,
-                                                   const kernelInfo &info_);
+  kernel_v* device_t<OpenMP>::buildKernelFromSource(const std::string &filename,
+                                                    const std::string &functionName_,
+                                                    const kernelInfo &info_);
 
   template <>
-  kernel_v device_t<OpenMP>::buildKernelFromBinary(const std::string &filename,
-                                                   const std::string &functionName_);
+  kernel_v* device_t<OpenMP>::buildKernelFromBinary(const std::string &filename,
+                                                    const std::string &functionName_);
 
   template <>
-  memory_v device_t<OpenMP>::malloc(const size_t bytes);
+  memory_v* device_t<OpenMP>::malloc(const size_t bytes);
 
   template <>
   int device_t<OpenMP>::simdWidth();

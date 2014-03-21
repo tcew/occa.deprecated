@@ -220,21 +220,8 @@ namespace occa {
                                        const std::string &functionName,
                                        const kernelInfo &info_){
     kernel ker;
-
-    switch(mode_){
-    case OpenMP: ker.kHandle = new kernel_t<OpenMP>; break;
-#if OCCA_OPENCL_ENABLED
-    case OpenCL: ker.kHandle = new kernel_t<OpenCL>; break;
-#endif
-#if OCCA_CUDA_ENABLED
-    case CUDA  : ker.kHandle = new kernel_t<CUDA>  ; break;
-#endif
-    default:
-      OCCA_CHECK(false);
-    }
-
+    ker.kHandle      = dHandle->buildKernelFromSource(filename, functionName, info_);
     ker.kHandle->dev = this;
-    *(ker.kHandle)   = dHandle->buildKernelFromSource(filename, functionName, info_);
 
     return ker;
   }
@@ -242,21 +229,8 @@ namespace occa {
   kernel device::buildKernelFromBinary(const std::string &filename,
                                        const std::string &functionName){
     kernel ker;
-
-    switch(mode_){
-    case OpenMP: ker.kHandle = new kernel_t<OpenMP>; break;
-#if OCCA_OPENCL_ENABLED
-    case OpenCL: ker.kHandle = new kernel_t<OpenCL>; break;
-#endif
-#if OCCA_CUDA_ENABLED
-    case CUDA  : ker.kHandle = new kernel_t<CUDA>  ; break;
-#endif
-    default:
-      OCCA_CHECK(false);
-    }
-
+    ker.kHandle      = dHandle->buildKernelFromBinary(filename, functionName);
     ker.kHandle->dev = this;
-    (*ker.kHandle)   = dHandle->buildKernelFromBinary(filename, functionName);
 
     return ker;
   }
@@ -264,20 +238,8 @@ namespace occa {
   memory device::malloc(const size_t bytes){
     memory mem;
 
-    switch(mode_){
-    case OpenMP: mem.mHandle = new memory_t<OpenMP>; break;
-#if OCCA_OPENCL_ENABLED
-    case OpenCL: mem.mHandle = new memory_t<OpenCL>; break;
-#endif
-#if OCCA_CUDA_ENABLED
-    case CUDA  : mem.mHandle = new memory_t<CUDA>  ; break;
-#endif
-    default:
-      OCCA_CHECK(false);
-    }
-
+    mem.mHandle      = dHandle->malloc(bytes);
     mem.mHandle->dev = this;
-    (*mem.mHandle)   = dHandle->malloc(bytes);
 
     return mem;
   }

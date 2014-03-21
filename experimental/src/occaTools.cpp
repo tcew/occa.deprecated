@@ -40,7 +40,7 @@ namespace occa {
   }
 
   std::string readFile(const std::string &filename){
-    std::ifstream fs(filename);
+    std::ifstream fs(filename.c_str());
     return std::string(std::istreambuf_iterator<char>(fs),
                        std::istreambuf_iterator<char>());
   }
@@ -82,7 +82,7 @@ namespace occa {
       cachedBinary.substr(0, lastSlash) + "i_" + cachedBinary.substr(lastSlash, chars);
 
     std::ofstream fs;
-    fs.open(iCachedBinary);
+    fs.open(iCachedBinary.c_str());
 
     fs << info.occaKeywords << info.header << readFile(filename);
 

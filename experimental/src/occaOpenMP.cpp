@@ -53,7 +53,7 @@ namespace occa {
   kernel_t<OpenMP>::~kernel_t(){}
 
   template <>
-  kernel_t<OpenMP>& kernel_t<OpenMP>::buildFromSource(const std::string &filename,
+  kernel_t<OpenMP>* kernel_t<OpenMP>::buildFromSource(const std::string &filename,
                                                       const std::string &functionName_,
                                                       const kernelInfo &info_){
     functionName = functionName_;
@@ -109,11 +109,11 @@ namespace occa {
 
     OCCA_CHECK(data_.handle != NULL);
 
-    return *this;
+    return this;
   }
 
   template <>
-  kernel_t<OpenMP>& kernel_t<OpenMP>::buildFromBinary(const std::string &filename,
+  kernel_t<OpenMP>* kernel_t<OpenMP>::buildFromBinary(const std::string &filename,
                                                       const std::string &functionName_){
     data = ::_mm_malloc(sizeof(OpenMPKernelData_t), OCCA_MEM_ALIGN);
     OCCA_EXTRACT_DATA(OpenMP, Kernel);
@@ -125,7 +125,7 @@ namespace occa {
 
     OCCA_CHECK(data_.handle != NULL);
 
-    return *this;
+    return this;
   }
 
   template <>
@@ -314,31 +314,31 @@ namespace occa {
   void device_t<OpenMP>::freeStream(stream s){}
 
   template <>
-  kernel_v device_t<OpenMP>::buildKernelFromSource(const std::string &filename,
+  kernel_v* device_t<OpenMP>::buildKernelFromSource(const std::string &filename,
                                                    const std::string &functionName,
                                                    const kernelInfo &info_){
-    kernel_t<OpenMP> k;
-    k.dev = dev;
-    k.buildFromSource(filename, functionName, info_);
+    kernel_v *k = new kernel_t<OpenMP>;
+    k->dev = dev;
+    k->buildFromSource(filename, functionName, info_);
     return k;
   }
 
   template <>
-  kernel_v device_t<OpenMP>::buildKernelFromBinary(const std::string &filename,
+  kernel_v* device_t<OpenMP>::buildKernelFromBinary(const std::string &filename,
                                                    const std::string &functionName){
-    kernel_t<OpenMP> k;
-    k.dev = dev;
-    k.buildFromBinary(filename, functionName);
+    kernel_v *k = new kernel_t<OpenMP>;
+    k->dev = dev;
+    k->buildFromBinary(filename, functionName);
     return k;
   }
 
   template <>
-  memory_v device_t<OpenMP>::malloc(const size_t bytes){
-    memory_t<OpenMP> mem;
+  memory_v* device_t<OpenMP>::malloc(const size_t bytes){
+    memory_v *mem = new memory_t<OpenMP>;
 
-    mem.dev    = dev;
-    mem.handle = ::_mm_malloc(bytes, OCCA_MEM_ALIGN);
-    mem.size   = bytes;
+    mem->dev    = dev;
+    mem->handle = ::_mm_malloc(bytes, OCCA_MEM_ALIGN);
+    mem->size   = bytes;
 
     return mem;
   }

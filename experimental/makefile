@@ -1,5 +1,8 @@
 include ${OCL_DIR}/scripts/makefile
 
+compiler = g++
+compilerFlags =
+
 #---[ COMPILATION ]-------------------------------
 headers = $(wildcard $(iPath)/*.hpp) $(wildcard $(iPath)/*.tpp)
 sources = $(wildcard $(sPath)/*.cpp)

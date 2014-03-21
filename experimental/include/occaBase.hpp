@@ -108,11 +108,11 @@ namespace occa {
   public:
     virtual inline ~kernel_v(){}
 
-    virtual kernel_v& buildFromSource(const std::string &filename,
+    virtual kernel_v* buildFromSource(const std::string &filename,
                                       const std::string &functionName_,
                                       const kernelInfo &info_ = defaultKernelInfo) = 0;
 
-    virtual kernel_v& buildFromBinary(const std::string &filename,
+    virtual kernel_v* buildFromBinary(const std::string &filename,
                                       const std::string &functionName_) = 0;
 
     virtual int preferredDimSize() = 0;
@@ -137,11 +137,11 @@ namespace occa {
 
     ~kernel_t();
 
-    kernel_t<mode>& buildFromSource(const std::string &filename,
+    kernel_t<mode>* buildFromSource(const std::string &filename,
                                     const std::string &functionName_,
                                     const kernelInfo &info_ = defaultKernelInfo);
 
-    kernel_t<mode>& buildFromBinary(const std::string &filename,
+    kernel_t<mode>* buildFromBinary(const std::string &filename,
                                     const std::string &functionName_);
 
     int preferredDimSize();
@@ -359,14 +359,14 @@ namespace occa {
     virtual stream genStream() = 0;
     virtual void freeStream(stream s) = 0;
 
-    virtual kernel_v buildKernelFromSource(const std::string &filename,
-                                           const std::string &functionName_,
-                                           const kernelInfo &info_ = defaultKernelInfo) = 0;
+    virtual kernel_v* buildKernelFromSource(const std::string &filename,
+                                            const std::string &functionName_,
+                                            const kernelInfo &info_ = defaultKernelInfo) = 0;
 
-    virtual kernel_v buildKernelFromBinary(const std::string &filename,
-                                           const std::string &functionName_) = 0;
+    virtual kernel_v* buildKernelFromBinary(const std::string &filename,
+                                            const std::string &functionName_) = 0;
 
-    virtual memory_v malloc(const size_t bytes) = 0;
+    virtual memory_v* malloc(const size_t bytes) = 0;
 
     virtual int simdWidth() = 0;
   };
@@ -389,14 +389,14 @@ namespace occa {
     stream genStream();
     void freeStream(stream s);
 
-    kernel_v buildKernelFromSource(const std::string &filename,
-                                   const std::string &functionName,
-                                   const kernelInfo &info_ = defaultKernelInfo);
+    kernel_v* buildKernelFromSource(const std::string &filename,
+                                    const std::string &functionName,
+                                    const kernelInfo &info_ = defaultKernelInfo);
 
-    kernel_v buildKernelFromBinary(const std::string &filename,
-                                   const std::string &functionName);
+    kernel_v* buildKernelFromBinary(const std::string &filename,
+                                    const std::string &functionName);
 
-    memory_v malloc(const size_t bytes);
+    memory_v* malloc(const size_t bytes);
 
     int simdWidth();
   };

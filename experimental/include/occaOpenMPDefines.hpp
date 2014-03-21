@@ -1,8 +1,6 @@
 #ifndef OCCA_OPENMP_DEFINES_HEADER
 #define OCCA_OPENMP_DEFINES_HEADER
 
-#include "/Users/dsm5/ocl/include/ocl_defines.hpp"
-
 #include <cmath>
 
 #if OCCA_OPENMP_ENABLED

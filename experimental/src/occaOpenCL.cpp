@@ -61,7 +61,7 @@ namespace occa {
   kernel_t<OpenCL>::~kernel_t(){}
 
   template <>
-  kernel_t<OpenCL>& kernel_t<OpenCL>::buildFromSource(const std::string &filename,
+  kernel_t<OpenCL>* kernel_t<OpenCL>::buildFromSource(const std::string &filename,
                                                       const std::string &functionName_,
                                                       const kernelInfo &info_){
     OCCA_EXTRACT_DATA(OpenCL, Kernel);
@@ -118,11 +118,11 @@ namespace occa {
 
     delete [] cFunction;
 
-    return *this;
+    return this;
   }
 
   template <>
-  kernel_t<OpenCL>& kernel_t<OpenCL>::buildFromBinary(const std::string &filename,
+  kernel_t<OpenCL>* kernel_t<OpenCL>::buildFromBinary(const std::string &filename,
                                                       const std::string &functionName_){
     OCCA_EXTRACT_DATA(OpenCL, Kernel);
 
@@ -152,7 +152,7 @@ namespace occa {
 
     delete [] cFile;
 
-    return *this;
+    return this;
   }
 
   template <>
@@ -442,17 +442,17 @@ namespace occa {
   }
 
   template <>
-  kernel_v device_t<OpenCL>::buildKernelFromSource(const std::string &filename,
+  kernel_v* device_t<OpenCL>::buildKernelFromSource(const std::string &filename,
                                                    const std::string &functionName,
                                                    const kernelInfo &info_){
     OCCA_EXTRACT_DATA(OpenCL, Device);
 
-    kernel_t<OpenCL> k;
+    kernel_v *k = new kernel_t<OpenCL>;
 
-    k.dev  = dev;
-    k.data = ::_mm_malloc(sizeof(OpenCLKernelData_t), OCCA_MEM_ALIGN);
+    k->dev  = dev;
+    k->data = ::_mm_malloc(sizeof(OpenCLKernelData_t), OCCA_MEM_ALIGN);
 
-    OpenCLKernelData_t &kData_ = *((OpenCLKernelData_t*) k.data);
+    OpenCLKernelData_t &kData_ = *((OpenCLKernelData_t*) k->data);
 
     kData_.platformDevice = data_.platformDevice;
 
@@ -460,7 +460,7 @@ namespace occa {
     kData_.deviceID   = data_.deviceID;
     kData_.context    = data_.context;
 
-    k.buildFromSource(filename, functionName, info_);
+    k->buildFromSource(filename, functionName, info_);
     return k;
   }
 
@@ -469,12 +469,12 @@ namespace occa {
                                                    const std::string &functionName){
     OCCA_EXTRACT_DATA(OpenCL, Device);
 
-    kernel_t<OpenCL> k;
+    kernel_v *k = new kernel_t<OpenCL>;
 
-    k.dev  = dev;
-    k.data = ::_mm_malloc(sizeof(OpenCLKernelData_t), OCCA_MEM_ALIGN);
+    k->dev  = dev;
+    k->data = ::_mm_malloc(sizeof(OpenCLKernelData_t), OCCA_MEM_ALIGN);
 
-    OpenCLKernelData_t &kData_ = *((OpenCLKernelData_t*) k.data);
+    OpenCLKernelData_t &kData_ = *((OpenCLKernelData_t*) k->data);
 
     kData_.platformDevice = data_.platformDevice;
 
@@ -482,22 +482,22 @@ namespace occa {
     kData_.deviceID   = data_.deviceID;
     kData_.context    = data_.context;
 
-    k.buildFromBinary(filename, functionName);
+    k->buildFromBinary(filename, functionName);
     return k;
   }
 
   template <>
-  memory_v device_t<OpenCL>::malloc(const size_t bytes){
+  memory_v* device_t<OpenCL>::malloc(const size_t bytes){
     OCCA_EXTRACT_DATA(OpenCL, Device);
 
-    memory_t<OpenCL> mem;
+    memory_v *mem = new memory_t<OpenCL>;
     cl_int error;
 
-    mem.dev    = dev;
-    mem.handle = ::_mm_malloc(sizeof(cl_mem), OCCA_MEM_ALIGN);
-    mem.size   = bytes;
+    mem->dev    = dev;
+    mem->handle = ::_mm_malloc(sizeof(cl_mem), OCCA_MEM_ALIGN);
+    mem->size   = bytes;
 
-    *((cl_mem*) mem.handle) = clCreateBuffer(data_.context, CL_MEM_READ_WRITE,
+    *((cl_mem*) mem->handle) = clCreateBuffer(data_.context, CL_MEM_READ_WRITE,
                                              bytes, NULL, &error);
     OCCA_CL_CHECK("Device: malloc", error);
 
