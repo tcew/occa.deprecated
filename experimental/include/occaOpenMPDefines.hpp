@@ -11,6 +11,7 @@
 
 //---[ Defines ]----------------------------------
 #define OCCA_MAX_THREADS 512
+#define OCCA_MEM_ALIGN   16
 
 typedef struct occaArgs_t_ { int data[12]; } occaArgs_t;
 //================================================

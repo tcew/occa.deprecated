@@ -21,8 +21,20 @@ namespace occa {
       for(int i = 0; i < 8; ++i)
         h[i] = (h[i] * p[i]) ^ fileContents[c];
 
+    int h2[8];
+
     for(int i = 0; i < 8; ++i)
-      ss <<  std::hex << h[i];
+      h2[i] = ((h[0] & (0xFF << (8*i))) << (8*i + 0))
+        |     ((h[1] & (0xFF << (8*i))) << (8*i + 1))
+        |     ((h[2] & (0xFF << (8*i))) << (8*i + 2))
+        |     ((h[3] & (0xFF << (8*i))) << (8*i + 3))
+        |     ((h[4] & (0xFF << (8*i))) << (8*i + 4))
+        |     ((h[5] & (0xFF << (8*i))) << (8*i + 5))
+        |     ((h[6] & (0xFF << (8*i))) << (8*i + 6))
+        |     ((h[7] & (0xFF << (8*i))) << (8*i + 7));
+
+    for(int i = 0; i < 8; ++i)
+      ss <<  std::hex << h2[i];
 
     return ss.str();
   }
