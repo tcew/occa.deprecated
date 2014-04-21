@@ -61,6 +61,17 @@ void cl_list_all_devices();
 
 #include "genFunction.hpp"
 
+inline std::string upcaseString(const string &str){
+  std::string cap = str;
+  const int size = cap.length();
+
+  for(int i = 0; i < size; ++i)
+    if(('a' <= cap[i]) && (cap[i] <= 'z'))
+      cap[i] -= 32;
+
+  return cap;
+}
+
 typedef enum {
 
   None   = 0,
@@ -973,9 +984,10 @@ public:
   }
 
   occaModelTypes interpretModel(string modelString){
+    modelString = upcaseString(modelString);
 
 #if OCCA_USE_OPENCL==1
-    if(modelString == "OpenCL"){
+    if(modelString == "OPENCL"){
       return OpenCL;
     }
 #endif
@@ -993,7 +1005,7 @@ public:
 #endif
 
 #if OCCA_USE_ALL==1
-    if(modelString == "All"){
+    if(modelString == "ALL"){
       return All;
     }
 #endif
@@ -1066,14 +1078,15 @@ public:
   }
 
   void setup(string threadModel, int _platform, int _device){
+    threadModel = upcaseString(threadModel);
 
 #if OCCA_USE_OPENCL==1
-    if(threadModel == "OpenCL"){
+    if(threadModel == "OPENCL"){
       cl = new clHelper(_platform, _device);
       model = OpenCL;
     }
 #else
-    if(threadModel == "OpenCL") { cout << "Exiting: OpenCL not available" << endl; throw 1; }
+    if(threadModel == "OPENCL") { cout << "Exiting: OpenCL not available" << endl; throw 1; }
 #endif
 
 #if OCCA_USE_CPU==1
