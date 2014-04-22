@@ -403,9 +403,9 @@ add_definitions( -DOCCA_CU_FLAGS="${OCCA_CU_FLAGS}")
 # check_cxx_symbol_exists(CLOCK_MONOTONIC "time.h;sys/time.h" OCCA_HAVE_CLOCK_MONOTONIC)
 # check_cxx_symbol_exists(gettimeofday "time.h;sys/time.h" OCCA_HAVE_GETTIMEOFDAY)
 # cmake_pop_check_state()
-# if(UNIX AND NOT APPLE)
-#   set(TIME_LIBRARIES rt)
-# endif()
+if(UNIX AND NOT APPLE)
+  set(TIME_LIBRARIES rt)
+endif()
 #
 # check_symbol_exists(mach_absolute_time "mach/mach_time.h" OCCA_HAVE_MACH_ABSOLUTE_TIME)
 
