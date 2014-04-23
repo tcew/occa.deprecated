@@ -159,23 +159,26 @@ public:
   void setThreadArray(size_t *in_global, size_t *in_local, int in_dim){
     dim = in_dim;
 
+    CUdevprop properties;
+    checkCudaErrors( cuDeviceGetProperties(&properties, *device) );
+
     for(int i=0;i<dim;++i){
       global[i] = in_global[i];
       local[i] = in_local[i];
 
-      if(global[i] == 0 || global[i] > MAX_GLOBAL_SIZE){
-	printf("Error: global[%d] = %lu is invalid !\n", i, global[i]);
-	throw 1;
+      if(global[i] <= 0 || global[i] >= properties.maxGridSize[i]){
+        printf("Error: global[%d] = %lu is invalid !\n", i, global[i]);
+        throw 1;
       }
 
-      if(local[i] == 0 || local[i] > MAX_LOCAL_SIZE){
-	printf("Error: local[%d] = %lu, is invalid !\n", i, local[i]);
-	throw 1;
+      if(local[i] <= 0 || local[i] > properties.maxThreadsDim[i]){
+        printf("Error: local[%d] = %lu, is invalid !\n", i, local[i]);
+        throw 1;
       }
 
       if((global[i]) % (local[i])){
-	printf("Error: global thread array size global[%d] = %lu, is not divisible by local thread array size local[%d] = %lu! \n", i, global[i], i, local[i]);
-	throw 1;
+        printf("Error: global thread array size global[%d] = %lu, is not divisible by local thread array size local[%d] = %lu! \n", i, global[i], i, local[i]);
+        throw 1;
       }
     }
   }
@@ -183,18 +186,21 @@ public:
   void setThreadDims(int dim_, occaDim groups, occaDim items){
     dim = dim_;
 
+    CUdevprop properties;
+    checkCudaErrors( cuDeviceGetProperties(&properties, *device) );
+
     for(int i = 0; i < dim; ++i){
       global[i] = groups[i]*items[i];
       local[i]  = items[i];
 
-      if(global[i] == 0 || global[i] > MAX_GLOBAL_SIZE){
-	printf("Error: global[%d] = %lu is invalid !\n", i, global[i]);
-	throw 1;
+      if(global[i] <= 0 || global[i] >= properties.maxGridSize[i]){
+        printf("Error: global[%d] = %lu is invalid !\n", i, global[i]);
+        throw 1;
       }
 
-      if(local[i] == 0 || local[i] > MAX_LOCAL_SIZE){
-	printf("Error: local[%d] = %lu, is invalid !\n", i, local[i]);
-	throw 1;
+      if(local[i] <= 0 || local[i] > properties.maxThreadsDim[i]){
+        printf("Error: local[%d] = %lu, is invalid !\n", i, local[i]);
+        throw 1;
       }
     }
   }

@@ -1,9 +1,6 @@
 #ifndef __GENFUNCTION
 #define __GENFUNCTION 1
 
-#define MAX_GLOBAL_SIZE 1000000000
-#define MAX_LOCAL_SIZE 1024
-
 #include "occaPods.hpp"
 
 #ifdef        OS_LINUX
