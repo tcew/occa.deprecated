@@ -3,12 +3,15 @@ enableOpenCL = 1
 enableCUDA   = 1
 enableGL     = 0
 
+# Libocca path
+occaPath = ./libocca
+
 # Paths
 paths  = -I./$(sPath) -I./$(iPath)
-paths += -I./$(occaSPath)
+paths += -I$(occaPath)
 paths += -I./include -I/opt/AMDAPP/include -I/usr/local/cuda/include -m64
 
-links = -L. -L/usr/local/cuda/lib
+links = -L. -L/usr/local/cuda/lib -L$(occaPath) -locca
 
 flags = -Ddatafloat=float
 
@@ -52,7 +55,7 @@ endif
 ifeq ($(DEBUG), 1)
 	flags += -g
 else
-	flags += -DNDEBUG=1 -mtune=native -O3 -ftree-vectorize -funroll-all-loops -fsplit-ivs-in-unroller -ffast-math
+	flags += -DNDEBUG=1 -mtune=native -O3 -ftree-vectorize -funroll-all-loops -ffast-math # -fsplit-ivs-in-unroller
 endif
 
 # # Float/Double

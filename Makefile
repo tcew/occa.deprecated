@@ -4,10 +4,7 @@ enableCUDA   = 1
 enableGL     = 0
 enableMPI    = 0
 
-# Object/Source/Include directories
-oPath = obj
-sPath = src
-iPath = include
+compiler = g++
 
 # OCCA Object/Source/Include directories
 occaIPath = libocca
@@ -15,7 +12,6 @@ occaSPath = libocca
 occaOPath = libocca
 
 # Paths
-paths  = -I./$(sPath) -I./$(iPath)
 paths += -I./$(occaSPath)
 paths += -I./include -I/opt/AMDAPP/include -I/usr/local/cuda/include -m64
 
@@ -75,26 +71,16 @@ endif
 
 flags += -DOCCA_USE_CPU=1
 
-# Substitutes files with the includes/objects paths
-headers = $(wildcard $(iPath)/*.hpp) $(wildcard $(iPath)/*.tpp)
-sources = $(wildcard $(sPath)/*.cpp)
-objects = $(subst $(sPath),$(oPath),$(sources:.cpp=.o))
-
 occaHeaders = $(wildcard $(occaIPath)/*.hpp) $(wildcard $(occaIPath)/*.tpp)
 occaSources = $(wildcard $(occaSPath)/*.cpp)
 occaObjects = $(subst $(occaSPath),$(occaOPath),$(occaSources:.cpp=.o))
 
-main: $(objects) $(occaObjects) $(headers) $(occaHeaders) main.cpp
-	$(compiler) -o main $(flags) $(objects) $(occaObjects) main.cpp $(paths) $(links)
-
-$(oPath)/%.o:$(sPath)/%.cpp $(wildcard $(subst $(sPath),$(iPath),$(<:.cpp=.hpp))) $(wildcard $(subst $(sPath),$(iPath),$(<:.cpp=.tpp)))
-	$(compiler) -o $@ $(flags) $(paths) -c $<
+$(occaOPath)/libocca.a: $(occaObjects) $(occaHeaders)
+	ar rcs $(occaOPath)/libocca.a $(occaObjects)
 
 $(occaOPath)/%.o:$(occaSPath)/%.cpp $(wildcard $(subst $(occaSPath),$(occaIPath),$(<:.cpp=.hpp))) $(wildcard $(subst $(occaSPath),$(occaIPath),$(<:.cpp=.tpp)))
 	$(compiler) -o $@ $(flags) $(paths) -c $<
 
 clean:
-	rm -f $(oPath)/*.o;
 	rm -f $(occaOPath)/*.o;
-	rm -f main;
-	rm -f .occa/*rank/*;
+	rm -f $(occaOPath)/*.a;
