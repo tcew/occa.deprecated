@@ -286,6 +286,12 @@ option(WITH_CPU_NATIVE "Compile cpu kernels with native optimizations" ON)
 if(WITH_CPU_NATIVE)
   if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     set(OCCA_CXX_FLAGS "${OCCA_CXX_FLAGS} -march=native -mtune=native")
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+      # To be able to run with native instructions we need to use the Clang linker.
+      # See http://stackoverflow.com/questions/9840207/how-to-use-avx-pclmulqdq-on-mac-os-x-lion
+      # for more detials.
+      set(OCCA_CXX_FLAGS "${OCCA_CXX_FLAGS} -Wa,-q")
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   endif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(OCCA_CXX_FLAGS "${OCCA_CXX_FLAGS} -march=native -mtune=native")
