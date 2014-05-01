@@ -2,6 +2,7 @@
 #define __OCCA 1
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 
@@ -1350,7 +1351,7 @@ public:
   template <class T>
   inline void addDefine(string &str, string name, const T &value){
     stringstream ss;
-    ss << "#define " << name << " " << value << "\n";
+    ss << "#define " << name << " " << std::setprecision(15) << value << "\n";
 
     // Defines are pre-pended
     str = ss.str() + str;
