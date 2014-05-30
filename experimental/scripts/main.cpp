@@ -3,6 +3,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <stdlib.h>
+
 inline std::string readFile(const std::string &filename){
   std::ifstream fs(filename.c_str());
   return std::string(std::istreambuf_iterator<char>(fs),
@@ -47,24 +49,34 @@ inline std::string saveFileToVariable(std::string filename,
 int main(int argc, char **argv){
   int mpChars, clChars, cuChars;
 
+  char *occaDir_ = getenv("OCCA_DIR");
+  if(occaDir_ == NULL){
+    std::cout << "Environment variable [OCCA_DIR] is not set.\n";
+    throw 1;
+  }
+  std::string occaDir(occaDir_);
+
   std::string ns = "namespace occa {";
-  std::string mp = saveFileToVariable("../include/occaOpenMPDefines.hpp",
+  std::string mp = saveFileToVariable(occaDir + "/include/occaOpenMPDefines.hpp",
                                       "occaOpenMPDefines",
                                       mpChars,
                                       "    ");
 
-  std::string cl = saveFileToVariable("../include/occaOpenCLDefines.hpp",
+  std::string cl = saveFileToVariable(occaDir + "/include/occaOpenCLDefines.hpp",
                                       "occaOpenCLDefines",
                                       clChars,
                                       "    ");
 
-  std::string cu = saveFileToVariable("../include/occaCUDADefines.hpp",
+  std::string cu = saveFileToVariable(occaDir + "/include/occaCUDADefines.hpp",
                                       "occaCUDADefines",
                                       cuChars,
                                       "    ");
 
+  std::string occaKernelDefinesHeader = occaDir + "/include/occaKernelDefines.hpp";
+  std::string occaKernelDefinesSource = occaDir + "/src/occaKernelDefines.cpp";
+
   std::ofstream fs;
-  fs.open("../include/occaKernelDefines.hpp");
+  fs.open(occaKernelDefinesHeader.c_str());
 
   fs << ns << '\n'
      << "    extern char occaOpenMPDefines[" << mpChars << "];\n"
@@ -74,7 +86,7 @@ int main(int argc, char **argv){
 
   fs.close();
 
-  fs.open("../src/occaKernelDefines.cpp");
+  fs.open(occaKernelDefinesSource.c_str());
 
   fs << ns << '\n'
      << mp << '\n'
