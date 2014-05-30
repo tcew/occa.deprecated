@@ -80,12 +80,15 @@ namespace occa {
 
     std::stringstream salt;
     salt << "OpenCL"
-         << data_.platformDevice.x << '-' << data_.platformDevice.y
+         << data_.platform << '-' << data_.device
          << info.salt();
 
     std::string cachedBinary = binaryIsCached(filename, salt.str());
 
-    if(fileExists(cachedBinary)){
+    struct stat buffer;
+    const bool fileExists = (stat(cachedBinary.c_str(), &buffer) == 0);
+
+    if(fileExists){
       std::cout << "Found cached binary of [" << filename << "] in [" << cachedBinary << "]\n";
       return buildFromBinary(cachedBinary, functionName);
     }
@@ -96,25 +99,74 @@ namespace occa {
 
     cl_int error;
 
-    const char *cFunction = ocl::cReadFile(iCachedBinary);
-    const size_t cLength  = ocl::fileSize(iCachedBinary);
+    int fileHandle = ::open(iCachedBinary.c_str(), O_RDWR);
+    if(fileHandle == 0)
+      printf("File [ %s ] does not exist.\n", iCachedBinary.c_str());
 
-    data_.program = clCreateProgramWithSource(data_.context, 1, &cFunction, &cLength, &error);
+    struct stat fileInfo;
+    const int status = fstat(fileHandle, &fileInfo);
+
+    if(status == 0)
+      printf( "File [ %s ] gave a bad fstat.\n" , iCachedBinary.c_str());
+
+    const size_t cLength = fileInfo.st_size;
+
+    char *cFunction = (char*) malloc(cLength);
+
+    ::read(fileHandle, cFunction, cLength);
+
+    ::close(fileHandle);
+
+    data_.program = clCreateProgramWithSource(data_.context, 1, (const char **) &cFunction, &cLength, &error);
     OCCA_CL_CHECK("Kernel (" + functionName + ") : Constructing Program", error);
 
     error = clBuildProgram(data_.program, 1, &data_.deviceID, info.flags.c_str(), NULL, NULL);
 
-    if(error)
-      cl::printProgramBuildLog(functionName, data_.program, data_.deviceID);
+    if(error){
+      cl_int error;
+      char *log;
+      size_t logSize;
+
+      clGetProgramBuildInfo(data_.program, data_.deviceID, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
+
+      if(logSize > 2){
+        log = new char[logSize+1];
+
+        error = clGetProgramBuildInfo(data_.program, data_.deviceID, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
+        OCCA_CL_CHECK("Kernel (" + functionName + ") : Building Program", error);
+        log[logSize] = '\0';
+
+        printf("Kernel (%s): Build Log\n%s", functionName.c_str(), log);
+
+        delete[] log;
+      }
+    }
 
     OCCA_CL_CHECK("Kernel (" + functionName + ") : Building Program", error);
 
-    cl::saveProgramBinary(data_.program, cachedBinary);
+    {
+      size_t binarySize;
+      char *binary;
+
+      OCCA_CL_CHECK("saveProgramBinary: Getting Binary Sizes",
+                   clGetProgramInfo(data_.program, CL_PROGRAM_BINARY_SIZES, sizeof(dim), &binarySize, NULL));
+
+      binary = new char[binarySize];
+
+      OCCA_CL_CHECK("saveProgramBinary: Getting Binary",
+                   clGetProgramInfo(data_.program, CL_PROGRAM_BINARIES, sizeof(char*), &binary, NULL));
+
+      FILE *fp = fopen(cachedBinary.c_str(), "wb");
+      fwrite(binary, 1, binarySize, fp);
+      fclose(fp);
+
+      delete [] binary;
+    }
 
     data_.kernel = clCreateKernel(data_.program, functionName.c_str(), &error);
     OCCA_CL_CHECK("Kernel (" + functionName + "): Creating Kernel", error);
 
-    std::cout << "OpenCL [" << cl::getPlatformVendor(data_.platformID) << "] compiled " << filename;
+    std::cout << "OpenCL compiled " << filename;
 
     delete [] cFunction;
 
@@ -130,20 +182,54 @@ namespace occa {
 
     cl_int binaryError, error;
 
-    const unsigned char *cFile = (const unsigned char*) ocl::cReadFile(filename);
-    size_t fileSize = ocl::fileSize(filename);
+
+    int fileHandle = ::open(filename.c_str(), O_RDWR);
+    if(fileHandle == 0)
+      printf("File [ %s ] does not exist.\n", filename.c_str());
+
+    struct stat fileInfo;
+    const int status = fstat(fileHandle, &fileInfo);
+
+    if(status == 0)
+      printf( "File [ %s ] gave a bad fstat.\n" , filename.c_str());
+
+    const size_t fileSize = fileInfo.st_size;
+
+    unsigned char *cFile = (unsigned char*) malloc(fileSize);
+
+    ::read(fileHandle, cFile, fileSize);
+
+    ::close(fileHandle);
 
     data_.program = clCreateProgramWithBinary(data_.context,
                                               1, &(data_.deviceID),
-                                              &fileSize, &cFile,
+                                              &fileSize,
+                                              (const unsigned char**) &cFile,
                                               &binaryError, &error);
     OCCA_CL_CHECK("Kernel (" + functionName + ") : Constructing Program", binaryError);
     OCCA_CL_CHECK("Kernel (" + functionName + ") : Constructing Program", error);
 
     error = clBuildProgram(data_.program, 1, &data_.deviceID, NULL, NULL, NULL); // <> Needs flags!
 
-    if(error)
-      cl::printProgramBuildLog(functionName, data_.program, data_.deviceID);
+    if(error){
+      cl_int error;
+      char *log;
+      size_t logSize;
+
+      clGetProgramBuildInfo(data_.program, data_.deviceID, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
+
+      if(logSize > 2){
+        log = new char[logSize+1];
+
+        error = clGetProgramBuildInfo(data_.program, data_.deviceID, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
+        OCCA_CL_CHECK("Kernel (" + functionName + ") : Building Program", error);
+        log[logSize] = '\0';
+
+        printf("Kernel (%s): Build Log\n%s", functionName.c_str(), log);
+
+        delete[] log;
+      }
+    }
 
     OCCA_CL_CHECK("Kernel (" + functionName + ") : Building Program", error);
 
@@ -412,13 +498,28 @@ namespace occa {
     OCCA_EXTRACT_DATA(OpenCL, Device);
     cl_int error;
 
-    data_.platformDevice = int2(platform, device);
+    data_.platform = platform;
+    data_.device   = device;
 
-    data_.platformID = cl::getPlatformID(platform);
-    data_.deviceID   = cl::getDeviceID(platform, device);
+    cl_platform_id *platforms = new cl_platform_id[platform + 1];
+    cl_device_id   *devices   = new cl_device_id[device + 1];
+
+    OCCA_CL_CHECK("OpenCL: Get Platform IDs",
+                  clGetPlatformIDs(platform + 1, platforms, NULL));
+
+    data_.platformID = platforms[platform];
+
+    clGetDeviceIDs(data_.platformID,
+                   CL_DEVICE_TYPE_ALL,
+                   device + 1, devices, NULL);
+
+    data_.deviceID = devices[device];
 
     data_.context = clCreateContext(NULL, 1, &data_.deviceID, NULL, NULL, &error);
     OCCA_CL_CHECK("Device: Creating Context", error);
+
+    delete [] platforms;
+    delete [] devices;
   }
 
   template <>
@@ -454,7 +555,8 @@ namespace occa {
 
     OpenCLKernelData_t &kData_ = *((OpenCLKernelData_t*) k->data);
 
-    kData_.platformDevice = data_.platformDevice;
+    kData_.platform = data_.platform;
+    kData_.device   = data_.device;
 
     kData_.platformID = data_.platformID;
     kData_.deviceID   = data_.deviceID;
@@ -465,8 +567,8 @@ namespace occa {
   }
 
   template <>
-  kernel_v device_t<OpenCL>::buildKernelFromBinary(const std::string &filename,
-                                                   const std::string &functionName){
+  kernel_v* device_t<OpenCL>::buildKernelFromBinary(const std::string &filename,
+                                                    const std::string &functionName){
     OCCA_EXTRACT_DATA(OpenCL, Device);
 
     kernel_v *k = new kernel_t<OpenCL>;
@@ -476,7 +578,8 @@ namespace occa {
 
     OpenCLKernelData_t &kData_ = *((OpenCLKernelData_t*) k->data);
 
-    kData_.platformDevice = data_.platformDevice;
+    kData_.platform = data_.platform;
+    kData_.device   = data_.device;
 
     kData_.platformID = data_.platformID;
     kData_.deviceID   = data_.deviceID;
@@ -511,23 +614,6 @@ namespace occa {
 
     OCCA_EXTRACT_DATA(OpenCL, Device);
 
-    if( cl::deviceIsAGPU(data_.deviceID) ){
-      std::string deviceVendor = cl::getDeviceVendor(data_.deviceID);
-
-      if(deviceVendor == "NVIDIA")
-        simdWidth_ = 32;
-      else if(deviceVendor == "AMD")
-        simdWidth_ = 64;
-      else if(deviceVendor == "Intel" || deviceVendor == "Apple") // <> Need to check for Xeon Phi
-        simdWidth_ = OCCA_SIMD_WIDTH;
-      else{
-        OCCA_CHECK(false);
-      }
-    }
-    else
-      simdWidth_ = OCCA_SIMD_WIDTH;
-
-#if 0
     cl_device_type dBuffer;
     bool isGPU;
 
@@ -564,9 +650,67 @@ namespace occa {
     }
     else
       simdWidth_ = OCCA_SIMD_WIDTH;
-#endif
 
     return simdWidth_;
+  }
+  //==================================
+
+
+  //---[ Error Handling ]-------------
+  std::string openclerror(int e){
+    switch(e){
+    case CL_SUCCESS:                                   return "CL_SUCCESS";
+    case CL_DEVICE_NOT_FOUND:                          return "CL_DEVICE_NOT_FOUND";
+    case CL_DEVICE_NOT_AVAILABLE:                      return "CL_DEVICE_NOT_AVAILABLE";
+    case CL_COMPILER_NOT_AVAILABLE:                    return "CL_COMPILER_NOT_AVAILABLE";
+    case CL_MEM_OBJECT_ALLOCATION_FAILURE:             return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
+    case CL_OUT_OF_RESOURCES:                          return "CL_OUT_OF_RESOURCES";
+    case CL_OUT_OF_HOST_MEMORY:                        return "CL_OUT_OF_HOST_MEMORY";
+    case CL_PROFILING_INFO_NOT_AVAILABLE:              return "CL_PROFILING_INFO_NOT_AVAILABLE";
+    case CL_MEM_COPY_OVERLAP:                          return "CL_MEM_COPY_OVERLAP";
+    case CL_IMAGE_FORMAT_MISMATCH:                     return "CL_IMAGE_FORMAT_MISMATCH";
+    case CL_IMAGE_FORMAT_NOT_SUPPORTED:                return "CL_IMAGE_FORMAT_NOT_SUPPORTED";
+    case CL_BUILD_PROGRAM_FAILURE:                     return "CL_BUILD_PROGRAM_FAILURE";
+    case CL_MAP_FAILURE:                               return "CL_MAP_FAILURE";
+    case CL_MISALIGNED_SUB_BUFFER_OFFSET:              return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
+    case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
+    case CL_INVALID_VALUE:                             return "CL_INVALID_VALUE";
+    case CL_INVALID_DEVICE_TYPE:                       return "CL_INVALID_DEVICE_TYPE";
+    case CL_INVALID_PLATFORM:                          return "CL_INVALID_PLATFORM";
+    case CL_INVALID_DEVICE:                            return "CL_INVALID_DEVICE";
+    case CL_INVALID_CONTEXT:                           return "CL_INVALID_CONTEXT";
+    case CL_INVALID_QUEUE_PROPERTIES:                  return "CL_INVALID_QUEUE_PROPERTIES";
+    case CL_INVALID_COMMAND_QUEUE:                     return "CL_INVALID_COMMAND_QUEUE";
+    case CL_INVALID_HOST_PTR:                          return "CL_INVALID_HOST_PTR";
+    case CL_INVALID_MEM_OBJECT:                        return "CL_INVALID_MEM_OBJECT";
+    case CL_INVALID_IMAGE_FORMAT_DESCRIPTOR:           return "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
+    case CL_INVALID_IMAGE_SIZE:                        return "CL_INVALID_IMAGE_SIZE";
+    case CL_INVALID_SAMPLER:                           return "CL_INVALID_SAMPLER";
+    case CL_INVALID_BINARY:                            return "CL_INVALID_BINARY";
+    case CL_INVALID_BUILD_OPTIONS:                     return "CL_INVALID_BUILD_OPTIONS";
+    case CL_INVALID_PROGRAM:                           return "CL_INVALID_PROGRAM";
+    case CL_INVALID_PROGRAM_EXECUTABLE:                return "CL_INVALID_PROGRAM_EXECUTABLE";
+    case CL_INVALID_KERNEL_NAME:                       return "CL_INVALID_KERNEL_NAME";
+    case CL_INVALID_KERNEL_DEFINITION:                 return "CL_INVALID_KERNEL_DEFINITION";
+    case CL_INVALID_KERNEL:                            return "CL_INVALID_KERNEL";
+    case CL_INVALID_ARG_INDEX:                         return "CL_INVALID_ARG_INDEX";
+    case CL_INVALID_ARG_VALUE:                         return "CL_INVALID_ARG_VALUE";
+    case CL_INVALID_ARG_SIZE:                          return "CL_INVALID_ARG_SIZE";
+    case CL_INVALID_KERNEL_ARGS:                       return "CL_INVALID_KERNEL_ARGS";
+    case CL_INVALID_WORK_DIMENSION:                    return "CL_INVALID_WORK_DIMENSION";
+    case CL_INVALID_WORK_GROUP_SIZE:                   return "CL_INVALID_WORK_GROUP_SIZE";
+    case CL_INVALID_WORK_ITEM_SIZE:                    return "CL_INVALID_WORK_ITEM_SIZE";
+    case CL_INVALID_GLOBAL_OFFSET:                     return "CL_INVALID_GLOBAL_OFFSET";
+    case CL_INVALID_EVENT_WAIT_LIST:                   return "CL_INVALID_EVENT_WAIT_LIST";
+    case CL_INVALID_EVENT:                             return "CL_INVALID_EVENT";
+    case CL_INVALID_OPERATION:                         return "CL_INVALID_OPERATION";
+    case CL_INVALID_GL_OBJECT:                         return "CL_INVALID_GL_OBJECT";
+    case CL_INVALID_BUFFER_SIZE:                       return "CL_INVALID_BUFFER_SIZE";
+    case CL_INVALID_MIP_LEVEL:                         return "CL_INVALID_MIP_LEVEL";
+    case CL_INVALID_GLOBAL_WORK_SIZE:                  return "CL_INVALID_GLOBAL_WORK_SIZE";
+    case CL_INVALID_PROPERTY:                          return "CL_INVALID_PROPERTY";
+    default:                                           return "UNKNOWN ERROR";
+    };
   }
   //==================================
 };

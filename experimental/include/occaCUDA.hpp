@@ -9,6 +9,8 @@
 
 #include "occaDefines.hpp"
 
+#include <cuda.h>
+
 namespace occa {
   //---[ Data Structs ]---------------
   struct CUDAKernelData_t {
@@ -149,6 +151,11 @@ namespace occa {
 
   template <>
   int device_t<CUDA>::simdWidth();
+  //==================================
+
+
+  //---[ Error Handling ]-------------
+  std::string cudaError(const CUresult errorCode);
   //==================================
 };
 

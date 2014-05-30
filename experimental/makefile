@@ -1,4 +1,4 @@
-include ./scripts/makefile
+include ${OCCA_DIR}/scripts/makefile
 
 #---[ WORKING PATHS ]-----------------------------
 lPath = lib

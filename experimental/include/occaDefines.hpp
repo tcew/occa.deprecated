@@ -88,28 +88,49 @@
 
 
 //---[ OpenCL ]-------------------------
+#if OCCA_DEBUG_ENABLED
+#  define OCCA_CL_CHECK( _str , _statement ) OCCA_CL_CHECK2( _str , _statement , __FILE__ , __LINE__ )
+#  define OCCA_CL_CHECK2( _str , _statement , file , line )              \
+  do {                                                                  \
+    cl_int _error = _statement;                                         \
+    if(_error){                                                         \
+      _error = _error < 0  ? _error : -_error;                          \
+      _error = _error < 65 ? _error : 15;                               \
+                                                                        \
+      std::cout << "Error\n"                                            \
+                << "    File    : " << file << '\n'                     \
+                << "    Line    : " << line << '\n'                     \
+                << "    Error   : OpenCL Error [ " << _error << " ]: " << openclError(_error) << '\n' \
+                << "    Message : " << _str << '\n';                    \
+      throw 1;                                                          \
+    }                                                                   \
+  } while(0);
+#else
+#  define OCCA_CL_CHECK( _str , _statement ) do { _statement; } while(0);
+#endif
+
 #  define OCCA_OPENCL_SET_KERNEL_ARG(N)                                 \
-  OCL_CL_CHECK("Kernel (" + functionName + ") : Setting Kernel Argument [ " + #N + " ]", \
+  OCCA_CL_CHECK("Kernel (" + functionName + ") : Setting Kernel Argument [ " + #N + " ]", \
                clSetKernelArg(kernel_, N, arg##N.size, arg##N.data()));
 
 #  define OCCA_OPENCL_SET_KERNEL_ARGS(N)                                \
-  OCL_CL_CHECK("Kernel (" + functionName + ") : Setting Kernel Argument [ " + #N + " ]", \
+  OCCA_CL_CHECK("Kernel (" + functionName + ") : Setting Kernel Argument [ " + #N + " ]", \
                clSetKernelArg(kernel_, 0, sizeof(int), &occaKernelInfoArgs)); \
                                                                         \
   OCL_FOR(1, N, OCCA_OPENCL_SET_KERNEL_ARG)
 
 #  define OCCA_OPENCL_KERNEL_OPERATOR_DEFINITION(N)                     \
   template <>                                                           \
-                                                void kernel_t<OpenCL>::operator() (OCCA_KERNEL_ARGS(N)){ \
+  void kernel_t<OpenCL>::operator() (OCCA_KERNEL_ARGS(N)){              \
     OCCA_EXTRACT_DATA(OpenCL, Kernel);                                  \
-    cl_kernel kernel_ = data_.kernel;                                   \
-    occa::dim fullOuter    = outer*inner;                               \
+    cl_kernel kernel_   = data_.kernel;                                 \
+    occa::dim fullOuter = outer*inner;                                  \
                                                                         \
     int occaKernelInfoArgs = 0;                                         \
                                                                         \
     OCCA_OPENCL_SET_KERNEL_ARGS(N);                                     \
                                                                         \
-    OCL_CL_CHECK("Kernel (" + functionName + ") : Kernel Run",          \
+    OCCA_CL_CHECK("Kernel (" + functionName + ") : Kernel Run",          \
                  clEnqueueNDRangeKernel(*((cl_command_queue*) dev->currentStream), \
                                         kernel_,                        \
                                         (cl_int) dims,                  \
@@ -125,6 +146,24 @@
 
 
 //---[ CUDA ]---------------------------
+#if OCCA_DEBUG_ENABLED
+#  define OCCA_CUDA_CHECK( _str , _statement ) OCCA_CUDA_CHECK2( _str , _statement , __FILE__ , __LINE__ )
+#  define OCCA_CUDA_CHECK2( _str , _statement , file , line )           \
+  do {                                                                  \
+    CUresult errorCode = _statement;                                    \
+    if(errorCode){                                                      \
+      std::cout << "Error\n"                                            \
+                << "    File    : " << file << '\n'                     \
+                << "    Line    : " << line << '\n'                     \
+                << "    Error   : CUDA Error [ " << errorCode << " ]: " << occa::cudaError(errorCode) << '\n' \
+                << "    Message : " << _str << '\n';                    \
+      throw 1;                                                          \
+    }                                                                   \
+  } while(0);
+#else
+#  define OCCA_CUDA_CHECK( _str , _statement ) do { _statement; } while(0);
+#endif
+
 #  define OCCA_CUDA_KERNEL_ARG(N) , arg##N.data()
 #  define OCCA_CUDA_KERNEL_ARGS(N) &occaKernelInfoArgs OCL_FOR(1, N, OCCA_CUDA_KERNEL_ARG)
 

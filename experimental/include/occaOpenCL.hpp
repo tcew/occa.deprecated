@@ -9,10 +9,17 @@
 
 #include "occaDefines.hpp"
 
+#if   OCCA_OS == LINUX_OS
+#  include <CL/cl.h>
+#  include <CL/cl_gl.h>
+#elif OCCA_OS == OSX_OS
+#  include <OpenCL/OpenCl.h>
+#endif
+
 namespace occa {
   //---[ Data Structs ]---------------
   struct OpenCLKernelData_t {
-    int2 platformDevice;
+    int platform, device;
 
     cl_platform_id platformID;
     cl_device_id deviceID;
@@ -22,7 +29,7 @@ namespace occa {
   };
 
   struct OpenCLDeviceData_t {
-    int2 platformDevice;
+    int platform, device;
 
     cl_platform_id platformID;
     cl_device_id   deviceID;
@@ -155,6 +162,11 @@ namespace occa {
 
   template <>
   int device_t<OpenCL>::simdWidth();
+  //==================================
+
+
+  //---[ Error Handling ]-------------
+  std::string openclError(int e);
   //==================================
 };
 

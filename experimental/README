@@ -1,0 +1,69 @@
++---[ 0: README ]-----------------------
+|   Installing:
+|     Go to your occa directory
+|     You should see:
+|        include, src, lib
+|
+|     type "make"
+|
+|     Setup environment variables (1)
++=======================================
+
+
++---[ 1: ENVIRONMENT VARIABLES ]--------
+|  Required environment variables:
+|    (2) OCCA_DIR
+|
+|  Optional environment variables:
+|    (3) OCCA_MPI_ENABLED
+|    (4) OCCA_OPENCL_ENABLED
+|    (5) OCCA_CUDA_ENABLED
++=======================================
+
+
++---[ 2: OCCA_DIR ]---------------------
+|  Info:
+|    Directory where occa/ is stored:
+|      $OCCA_DIR/include
+|      $OCCA_DIR/src
+|      $OCCA_DIR/lib
+|
+|  Setting it:
+|    export OCCA_DIR=/absolute/path/to/dir (note: no end / after dir)
++=======================================
+
+
++--[ 3: OCCA_MPI_ENABLED ]--------------
+|  Info:
+|    Enable MPI features in OCCA
+|
+|  Enabling MPI features:
+|    export OCCA_MPI_ENABLED=1
+|
+|  Defaults to:
+|    export OCCA_MPI_ENABLED=0
++=======================================
+
+
++--[ 4: OCCA_OPENCL_ENABLED ]-----------
+|  Info:
+|    Enable OpenCL mode in OCCA
+|
+|  Enabling OpenCL:
+|    export OCCA_OPENCL_ENABLED=1
+|
+|  Defaults to:
+|    export OCCA_OPENCL_ENABLED=0
++=======================================
+
+
++--[ 5: OCCA_CUDA_ENABLED ]-------------
+|  Info:
+|    Enable CUDA mode in OCCA
+|
+|  Enabling CUDA:
+|    export OCCA_CUDA_ENABLED=1
+|
+|  Defaults to:
+|    export OCCA_CUDA_ENABLED=0
++=======================================

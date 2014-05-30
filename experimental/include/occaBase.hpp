@@ -6,8 +6,12 @@
 #include <fstream>
 #include <vector>
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <xmmintrin.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "occaDefines.hpp"
 #include "occaTools.hpp"
@@ -81,6 +85,7 @@ namespace occa {
     inline dim(const dim &d);
 
     inline dim& operator = (const dim &d);
+    inline dim  operator * (const dim &d);
 
     inline size_t& operator [] (int i);
   };
@@ -529,6 +534,12 @@ namespace occa {
     z = d.z;
 
     return *this;
+  }
+
+  inline dim dim::operator * (const dim &d){
+    return dim(x * d.x,
+               y * d.y,
+               z * d.z);
   }
 
   inline size_t& dim::operator [] (int i){
