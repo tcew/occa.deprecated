@@ -76,7 +76,12 @@ namespace occa {
 
     info.addOCCAKeywords(occaCUDADefines);
 
-    std::string cachedBinary = binaryIsCached(filename, "CUDA" + info.salt());
+    std::stringstream salt;
+    salt << "CUDA"
+         << info.salt()
+         << functionName;
+
+    std::string cachedBinary = binaryIsCached(filename, salt.str());
 
     struct stat buffer;
     const bool fileExists = (stat(cachedBinary.c_str(), &buffer) == 0);
@@ -343,6 +348,15 @@ namespace occa {
   }
 
   template <>
+  void device_t<CUDA>::flush(){}
+
+  template <>
+  void device_t<CUDA>::finish(){
+    OCCA_CUDA_CHECK("Device: Finish",
+                    cuCtxSynchronize() );
+  }
+
+  template <>
   stream device_t<CUDA>::genStream(){
     OCCA_EXTRACT_DATA(CUDA, Device);
 
@@ -401,7 +415,8 @@ namespace occa {
   }
 
   template <>
-  memory_v* device_t<CUDA>::malloc(const size_t bytes){
+  memory_v* device_t<CUDA>::malloc(const size_t bytes,
+                                   void *source){
     OCCA_EXTRACT_DATA(CUDA, Device);
 
     memory_v *mem = new memory_t<CUDA>;
@@ -412,6 +427,9 @@ namespace occa {
 
     OCCA_CUDA_CHECK("Device: malloc",
                     cuMemAlloc((CUdeviceptr*) mem->handle, bytes));
+
+    if(source != NULL)
+      mem->copyFrom(source, bytes, 0);
 
     return mem;
   }

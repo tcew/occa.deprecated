@@ -68,7 +68,12 @@ namespace occa {
 
     info.addOCCAKeywords(occaOpenMPDefines);
 
-    std::string cachedBinary = binaryIsCached(filename, "OpenMP" + info.salt());
+    std::stringstream salt;
+    salt << "OpenMP"
+         << info.salt()
+         << functionName;
+
+    std::string cachedBinary = binaryIsCached(filename, salt.str());
 
     struct stat buffer;
     bool fileExists = (stat(cachedBinary.c_str(), &buffer) == 0);
@@ -306,6 +311,12 @@ namespace occa {
   void device_t<OpenMP>::setup(const int platform, const int device){}
 
   template <>
+  void device_t<OpenMP>::flush(){}
+
+  template <>
+  void device_t<OpenMP>::finish(){}
+
+  template <>
   stream device_t<OpenMP>::genStream(){
     return NULL;
   }
@@ -333,12 +344,16 @@ namespace occa {
   }
 
   template <>
-  memory_v* device_t<OpenMP>::malloc(const size_t bytes){
+  memory_v* device_t<OpenMP>::malloc(const size_t bytes,
+                                     void *source){
     memory_v *mem = new memory_t<OpenMP>;
 
     mem->dev    = dev;
     mem->handle = ::_mm_malloc(bytes, OCCA_MEM_ALIGN);
     mem->size   = bytes;
+
+    if(source != NULL)
+      ::memcpy(mem->handle, source, bytes);
 
     return mem;
   }

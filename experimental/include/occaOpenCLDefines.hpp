@@ -24,6 +24,10 @@
 #define occaInnerDim0 (get_local_size(0))
 #define occaInnerId0  (get_local_id(0))
 // - - - - - - - - - - - - - - - - - - - - - - - -
+#define occaGlobalDim2 (get_global_size(2))
+#define occaGlobalDim1 (get_global_size(1))
+#define occaGlobalDim0 (get_global_size(0))
+// - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaGlobalId2 (get_global_id(2))
 #define occaGlobalId1 (get_global_id(1))
 #define occaGlobalId0 (get_global_id(0))
@@ -34,16 +38,22 @@
 #define occaOuterFor2
 #define occaOuterFor1
 #define occaOuterFor0
+#define occaOuterFor occaOuterFor2 occaOuterFor1 occaOuterFor0
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaInnerFor2
 #define occaInnerFor1
 #define occaInnerFor0
+#define occaInnerFor occaInnerFor2 occaInnerFor1 occaInnerFor0
+// - - - - - - - - - - - - - - - - - - - - - - - -
+#define occaGlobalFor0 occaOuterFor0 occaInnerFor0
 //================================================
 
 
 //---[ Standard Functions ]-----------------------
-#define occaLocalBarrier()  barrier(CLK_LOCAL_MEM_FENCE)
-#define occaGlobalBarrier() barrier(CLK_GLOBAL_MEM_FENCE)
+#define occaLocalMemFence CLK_LOCAL_MEM_FENCE
+#define occaGlobalMemFence CLK_GLOBAL_MEM_FENCE
+
+#define occaBarrier(FENCE) barrier(FENCE)
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaContinue return
 //================================================
@@ -56,6 +66,7 @@
 #define occaRestrict restrict
 #define occaVolatile volatile
 #define occaAligned
+#define occaFunctionShared __local
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaConst    const
 #define occaConstant __constant
@@ -73,9 +84,17 @@
 //================================================
 
 
-//---[ Register ]---------------------------------
-#define occaRegisterArray( TYPE , NAME , SIZE ) TYPE NAME[SIZE]
-#define occaRegister( TYPE , NAME )             TYPE NAME
+//---[ Private ]---------------------------------
+#define occaPrivateArray( TYPE , NAME , SIZE ) TYPE NAME[SIZE]
+#define occaPrivate( TYPE , NAME )             TYPE NAME
 //================================================
+
+/*
+  Register -> Private
+  Barrier
+  occaInnerFor, occaOuterFor
+  occaFunctionShared
+  occaGlobalDim{0,1,2}
+ */
 
 #endif

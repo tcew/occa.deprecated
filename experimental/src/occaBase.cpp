@@ -203,6 +203,14 @@ namespace occa {
     return modeToStr(mode_);
   }
 
+  void device::flush(){
+    dHandle->flush();
+  }
+
+  void device::finish(){
+    dHandle->finish();
+  }
+
   stream device::genStream(){
     streams.push_back( dHandle->genStream() );
     return streams.back();
@@ -235,10 +243,11 @@ namespace occa {
     return ker;
   }
 
-  memory device::malloc(const size_t bytes){
+  memory device::malloc(const size_t bytes,
+                        void *source){
     memory mem;
 
-    mem.mHandle      = dHandle->malloc(bytes);
+    mem.mHandle      = dHandle->malloc(bytes, source);
     mem.mHandle->dev = this;
 
     return mem;

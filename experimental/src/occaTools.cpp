@@ -2,9 +2,9 @@
 #include "occa.hpp"      // For kernelInfo
 
 namespace occa {
-  std::string fnv(const std::string &filename){
-    std::string fileContents = readFile(filename);
-    const int len = fileContents.size();
+  std::string fnv(const std::string &saltedString){
+    const int len = saltedString.size();
+    std::cout << "len = " << len << '\n';
     std::stringstream ss;
 
     int h[8] = {101527, 101531,
@@ -19,22 +19,22 @@ namespace occa {
 
     for(int c = 0; c < len; ++c)
       for(int i = 0; i < 8; ++i)
-        h[i] = (h[i] * p[i]) ^ fileContents[c];
+        h[i] = (h[i] * p[i]) ^ saltedString[c];
 
-    int h2[8];
+    // int h2[8];
+
+    // for(int i = 0; i < 8; ++i)
+    //   h2[i] = ((h[0] & (0xFF << (8*i))) << (8*i + 0))
+    //     |     ((h[1] & (0xFF << (8*i))) << (8*i + 1))
+    //     |     ((h[2] & (0xFF << (8*i))) << (8*i + 2))
+    //     |     ((h[3] & (0xFF << (8*i))) << (8*i + 3))
+    //     |     ((h[4] & (0xFF << (8*i))) << (8*i + 4))
+    //     |     ((h[5] & (0xFF << (8*i))) << (8*i + 5))
+    //     |     ((h[6] & (0xFF << (8*i))) << (8*i + 6))
+    //     |     ((h[7] & (0xFF << (8*i))) << (8*i + 7));
 
     for(int i = 0; i < 8; ++i)
-      h2[i] = ((h[0] & (0xFF << (8*i))) << (8*i + 0))
-        |     ((h[1] & (0xFF << (8*i))) << (8*i + 1))
-        |     ((h[2] & (0xFF << (8*i))) << (8*i + 2))
-        |     ((h[3] & (0xFF << (8*i))) << (8*i + 3))
-        |     ((h[4] & (0xFF << (8*i))) << (8*i + 4))
-        |     ((h[5] & (0xFF << (8*i))) << (8*i + 5))
-        |     ((h[6] & (0xFF << (8*i))) << (8*i + 6))
-        |     ((h[7] & (0xFF << (8*i))) << (8*i + 7));
-
-    for(int i = 0; i < 8; ++i)
-      ss <<  std::hex << h2[i];
+      ss <<  std::hex << h[i];
 
     return ss.str();
   }
@@ -48,7 +48,7 @@ namespace occa {
   std::string binaryIsCached(const std::string &filename,
                              const std::string &salt){
     //---[ Place Somewhere Else ]-----
-    char *c_cachePath = getenv("OCCA_CACHE_PATH");
+    char *c_cachePath = getenv("OCCA_CACHE_DIR");
     OCCA_CHECK(c_cachePath != NULL);
 
     std::string oclCachePath(c_cachePath);

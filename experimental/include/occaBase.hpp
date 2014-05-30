@@ -361,6 +361,9 @@ namespace occa {
   public:
     virtual void setup(const int platform, const int device) = 0;
 
+    virtual void flush()  = 0;
+    virtual void finish() = 0;
+
     virtual stream genStream() = 0;
     virtual void freeStream(stream s) = 0;
 
@@ -371,7 +374,8 @@ namespace occa {
     virtual kernel_v* buildKernelFromBinary(const std::string &filename,
                                             const std::string &functionName_) = 0;
 
-    virtual memory_v* malloc(const size_t bytes) = 0;
+    virtual memory_v* malloc(const size_t bytes,
+                             void* source) = 0;
 
     virtual int simdWidth() = 0;
   };
@@ -391,6 +395,9 @@ namespace occa {
 
     void setup(const int platform, const int device);
 
+    void flush();
+    void finish();
+
     stream genStream();
     void freeStream(stream s);
 
@@ -401,7 +408,8 @@ namespace occa {
     kernel_v* buildKernelFromBinary(const std::string &filename,
                                     const std::string &functionName);
 
-    memory_v* malloc(const size_t bytes);
+    memory_v* malloc(const size_t bytes,
+                     void *source);
 
     int simdWidth();
   };
@@ -409,6 +417,7 @@ namespace occa {
   class device {
     template<occa::mode> friend class occa::kernel_t;
     template<occa::mode> friend class occa::memory_t;
+    template<occa::mode> friend class occa::device_t;
 
   private:
     occa::mode mode_;
@@ -433,6 +442,9 @@ namespace occa {
 
     std::string mode();
 
+    void flush();
+    void finish();
+
     stream genStream();
     stream getStream();
     void setStream(stream s);
@@ -444,7 +456,8 @@ namespace occa {
     kernel buildKernelFromBinary(const std::string &filename,
                                  const std::string &functionName);
 
-    memory malloc(const size_t bytes);
+    memory malloc(const size_t bytes,
+                  void *source = NULL);
 
     void free();
 
@@ -470,6 +483,13 @@ namespace occa {
       occaKeywords = p.occaKeywords;
       header = p.header;
       flags  = p.flags;
+
+      return *this;
+    }
+
+    inline kernelInfo& operator += (const kernelInfo &p){
+      header += p.header;
+      flags  += p.flags;
 
       return *this;
     }

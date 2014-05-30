@@ -132,6 +132,12 @@ namespace occa {
   void device_t<CUDA>::setup(const int platform, const int device);
 
   template <>
+  void device_t<CUDA>::flush();
+
+  template <>
+  void device_t<CUDA>::finish();
+
+  template <>
   stream device_t<CUDA>::genStream();
 
   template <>
@@ -147,7 +153,8 @@ namespace occa {
                                                   const std::string &functionName_);
 
   template <>
-  memory_v* device_t<CUDA>::malloc(const size_t bytes);
+  memory_v* device_t<CUDA>::malloc(const size_t bytes,
+                                   void *source);
 
   template <>
   int device_t<CUDA>::simdWidth();

@@ -81,7 +81,8 @@ namespace occa {
     std::stringstream salt;
     salt << "OpenCL"
          << data_.platform << '-' << data_.device
-         << info.salt();
+         << info.salt()
+         << functionName;
 
     std::string cachedBinary = binaryIsCached(filename, salt.str());
 
@@ -106,7 +107,7 @@ namespace occa {
     struct stat fileInfo;
     const int status = fstat(fileHandle, &fileInfo);
 
-    if(status == 0)
+    if(status != 0)
       printf( "File [ %s ] gave a bad fstat.\n" , iCachedBinary.c_str());
 
     const size_t cLength = fileInfo.st_size;
@@ -190,7 +191,7 @@ namespace occa {
     struct stat fileInfo;
     const int status = fstat(fileHandle, &fileInfo);
 
-    if(status == 0)
+    if(status != 0)
       printf( "File [ %s ] gave a bad fstat.\n" , filename.c_str());
 
     const size_t fileSize = fileInfo.st_size;
@@ -523,6 +524,16 @@ namespace occa {
   }
 
   template <>
+  void device_t<OpenCL>::flush(){
+    clFlush(*((cl_command_queue*) dev->currentStream));
+  }
+
+  template <>
+  void device_t<OpenCL>::finish(){
+    clFinish(*((cl_command_queue*) dev->currentStream));
+  }
+
+  template <>
   stream device_t<OpenCL>::genStream(){
     OCCA_EXTRACT_DATA(OpenCL, Device);
     cl_int error;
@@ -590,7 +601,8 @@ namespace occa {
   }
 
   template <>
-  memory_v* device_t<OpenCL>::malloc(const size_t bytes){
+  memory_v* device_t<OpenCL>::malloc(const size_t bytes,
+                                     void *source){
     OCCA_EXTRACT_DATA(OpenCL, Device);
 
     memory_v *mem = new memory_t<OpenCL>;
@@ -600,8 +612,15 @@ namespace occa {
     mem->handle = ::_mm_malloc(sizeof(cl_mem), OCCA_MEM_ALIGN);
     mem->size   = bytes;
 
-    *((cl_mem*) mem->handle) = clCreateBuffer(data_.context, CL_MEM_READ_WRITE,
-                                             bytes, NULL, &error);
+    if(source == NULL)
+      *((cl_mem*) mem->handle) = clCreateBuffer(data_.context,
+                                                CL_MEM_READ_WRITE,
+                                                bytes, NULL, &error);
+    else
+      *((cl_mem*) mem->handle) = clCreateBuffer(data_.context,
+                                                CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                                bytes, source, &error);
+
     OCCA_CL_CHECK("Device: malloc", error);
 
     return mem;
@@ -657,7 +676,7 @@ namespace occa {
 
 
   //---[ Error Handling ]-------------
-  std::string openclerror(int e){
+  std::string openclError(int e){
     switch(e){
     case CL_SUCCESS:                                   return "CL_SUCCESS";
     case CL_DEVICE_NOT_FOUND:                          return "CL_DEVICE_NOT_FOUND";

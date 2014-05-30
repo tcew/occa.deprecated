@@ -142,6 +142,12 @@ namespace occa {
   void device_t<OpenMP>::setup(const int platform, const int device);
 
   template <>
+  void device_t<OpenMP>::flush();
+
+  template <>
+  void device_t<OpenMP>::finish();
+
+  template <>
   stream device_t<OpenMP>::genStream();
 
   template <>
@@ -157,7 +163,8 @@ namespace occa {
                                                     const std::string &functionName_);
 
   template <>
-  memory_v* device_t<OpenMP>::malloc(const size_t bytes);
+  memory_v* device_t<OpenMP>::malloc(const size_t bytes,
+                                     void *source);
 
   template <>
   int device_t<OpenMP>::simdWidth();
