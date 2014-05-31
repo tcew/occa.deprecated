@@ -167,7 +167,7 @@ namespace occa {
     data_.kernel = clCreateKernel(data_.program, functionName.c_str(), &error);
     OCCA_CL_CHECK("Kernel (" + functionName + "): Creating Kernel", error);
 
-    std::cout << "OpenCL compiled " << filename;
+    std::cout << "OpenCL compiled " << filename << " from [" << iCachedBinary << "]\n";
 
     delete [] cFunction;
 

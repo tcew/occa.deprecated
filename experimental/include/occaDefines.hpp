@@ -115,7 +115,7 @@
 
 #  define OCCA_OPENCL_SET_KERNEL_ARGS(N)                                \
   OCCA_CL_CHECK("Kernel (" + functionName + ") : Setting Kernel Argument [ " + #N + " ]", \
-               clSetKernelArg(kernel_, 0, sizeof(int), &occaKernelInfoArgs)); \
+                clSetKernelArg(kernel_, 0, sizeof(cl_int), &occaKernelInfoArgs)); \
                                                                         \
   OCL_FOR(1, N, OCCA_OPENCL_SET_KERNEL_ARG)
 
@@ -126,7 +126,7 @@
     cl_kernel kernel_   = data_.kernel;                                 \
     occa::dim fullOuter = outer*inner;                                  \
                                                                         \
-    int occaKernelInfoArgs = 0;                                         \
+    cl_int occaKernelInfoArgs = 0;                                      \
                                                                         \
     OCCA_OPENCL_SET_KERNEL_ARGS(N);                                     \
                                                                         \
@@ -141,7 +141,7 @@
   }
 
 #  define OCCA_OPENCL_KERNEL_OPERATOR_DEFINITIONS                       \
-                                                OCL_FOR_2(1, OCL_MAX_FOR_LOOPS, OCCA_OPENCL_KERNEL_OPERATOR_DEFINITION)
+  OCL_FOR_2(1, OCL_MAX_FOR_LOOPS, OCCA_OPENCL_KERNEL_OPERATOR_DEFINITION)
 //======================================
 
 

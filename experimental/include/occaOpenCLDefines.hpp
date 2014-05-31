@@ -13,7 +13,7 @@
 #define occaOuterId1  (get_group_id(1))
 
 #define occaOuterDim0 (get_num_groups(0))
-#define occaOuterId0  (get_group_id(1))
+#define occaOuterId0  (get_group_id(0))
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaInnerDim2 (get_local_size(2))
 #define occaInnerId2  (get_local_id(2))
