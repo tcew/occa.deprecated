@@ -2,30 +2,35 @@ include ${OCCA_DIR}/scripts/makefile
 
 #---[ WORKING PATHS ]-----------------------------
 lPath = lib
+
+occaIPath = ${OCCA_DIR}/$(iPath)
+occaOPath = ${OCCA_DIR}/$(oPath)
+occaSPath = ${OCCA_DIR}/$(sPath)
+occaLPath = ${OCCA_DIR}/$(lPath)
 #=================================================
 
 #---[ COMPILATION ]-------------------------------
-headers = $(wildcard $(iPath)/*.hpp) $(wildcard $(iPath)/*.tpp)
-sources = $(wildcard $(sPath)/*.cpp)
+headers = $(wildcard $(occaIPath)/*.hpp) $(wildcard $(occaIPath)/*.tpp)
+sources = $(wildcard $(occaSPath)/*.cpp)
 
-objects = $(subst $(sPath)/,$(oPath)/,$(sources:.cpp=.o))
+objects = $(subst $(occaSPath)/,$(occaOPath)/,$(sources:.cpp=.o))
 
-$(lPath)/libocca.a:$(objects) $(headers)
-	ar rcs $(lPath)/libocca.a $(objects)
+$(occaLPath)/libocca.a:$(objects) $(headers)
+	ar rcs $(occaLPath)/libocca.a $(objects)
 
-$(oPath)/%.o:$(sPath)/%.cpp $(iPath)/%.hpp$(wildcard $(subst $(sPath)/,$(iPath)/,$(<:.cpp=.hpp))) $(wildcard $(subst $(sPath)/,$(iPath)/,$(<:.cpp=.tpp)))\
-	$(oPath)/occaKernelDefines.o
+$(occaOPath)/%.o:$(occaSPath)/%.cpp $(occaIPath)/%.hpp$(wildcard $(subst $(occaSPath)/,$(occaIPath)/,$(<:.cpp=.hpp))) $(wildcard $(subst $(occaSPath)/,$(occaIPath)/,$(<:.cpp=.tpp)))\
+	$(occaOPath)/occaKernelDefines.o
 	$(compiler) $(compilerFlags) -o $@ $(flags) -c $(paths) $<
 
-$(oPath)/occaKernelDefines.o:$(iPath)/occaOpenMPDefines.hpp $(iPath)/occaOpenCLDefines.hpp $(iPath)/occaCUDADefines.hpp $(iPath)/occaKernelDefines.hpp
-	$(compiler) $(compilerFlags) -o $(oPath)/occaKernelDefines.o $(flags) -c $(paths) $(sPath)/occaKernelDefines.cpp
+$(occaOPath)/occaKernelDefines.o:$(occaIPath)/occaOpenMPDefines.hpp $(occaIPath)/occaOpenCLDefines.hpp $(occaIPath)/occaCUDADefines.hpp $(occaIPath)/occaKernelDefines.hpp
+	$(compiler) $(compilerFlags) -o $(occaOPath)/occaKernelDefines.o $(flags) -c $(paths) $(occaSPath)/occaKernelDefines.cpp
 
-$(iPath)/occaKernelDefines.hpp:
+$(occaIPath)/occaKernelDefines.hpp:
 	$(compiler) -o $(OCCA_DIR)/scripts/occaKernelDefinesGenerator $(OCCA_DIR)/scripts/occaKernelDefinesGenerator.cpp
 	$(OCCA_DIR)/scripts/occaKernelDefinesGenerator
 
 clean:
-	rm -f ${OCCA_DIR}/$(oPath)/*;
+	rm -f $(occaOPath)/*;
 	rm -f ${OCCA_DIR}/scripts/main;
-	rm -f lib/libocca.a;
+	rm -f $(occaLPath)/libocca.a;
 #=================================================
