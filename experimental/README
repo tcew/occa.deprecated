@@ -1,10 +1,17 @@
 +---[ 0: README ]-----------------------
 |   Installing:
 |     Go to your occa directory
-|     You should see:
-|        include, src, lib
+|        You should see: include, src, lib
 |
-|     type "make"
+|     Specify your compiler:
+|        Set CXX to your preferred C++ compiler
+|        (For specific C++ flags, use CXXFLAGS)
+|
+|        Set MPICXX to your preferred MPI-C++ compiler
+|        (For specific MPI-C++ flags, use MPICXXFLAGS)
+|
+|     Install:
+|        Type "make"
 |
 |     Setup environment variables (1)
 +=======================================
@@ -31,7 +38,6 @@
 |
 |  Setting it:
 |    export OCCA_DIR=/absolute/path/to/dir
-|    Note: no end / after dir
 +=======================================
 
 
@@ -42,7 +48,6 @@
 |
 |  Setting it:
 |    export OCCA_CACHE_DIR=/absolute/path/to/dir
-|    Note: no end / after dir
 +=======================================
 
 

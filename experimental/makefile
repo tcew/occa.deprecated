@@ -21,10 +21,11 @@ $(oPath)/occaKernelDefines.o:$(iPath)/occaOpenMPDefines.hpp $(iPath)/occaOpenCLD
 	$(compiler) $(compilerFlags) -o $(oPath)/occaKernelDefines.o $(flags) -c $(paths) $(sPath)/occaKernelDefines.cpp
 
 $(iPath)/occaKernelDefines.hpp:
-	$(compiler) -o $(OCCA_DIR)/scripts/main $(OCCA_DIR)/scripts/main.cpp
-	$(OCCA_DIR)/scripts/main
+	$(compiler) -o $(OCCA_DIR)/scripts/occaKernelDefinesGenerator $(OCCA_DIR)/scripts/occaKernelDefinesGenerator.cpp
+	$(OCCA_DIR)/scripts/occaKernelDefinesGenerator
 
 clean:
-	rm -f $(oPath)/*;
+	rm -f ${OCCA_DIR}/$(oPath)/*;
+	rm -f ${OCCA_DIR}/scripts/main;
 	rm -f lib/libocca.a;
 #=================================================
