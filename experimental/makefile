@@ -25,8 +25,10 @@ $(occaOPath)/%.o:$(occaSPath)/%.cpp $(occaIPath)/%.hpp$(wildcard $(subst $(occaS
 $(occaOPath)/occaKernelDefines.o:$(occaIPath)/occaOpenMPDefines.hpp $(occaIPath)/occaOpenCLDefines.hpp $(occaIPath)/occaCUDADefines.hpp $(occaIPath)/occaKernelDefines.hpp
 	$(compiler) $(compilerFlags) -o $(occaOPath)/occaKernelDefines.o $(flags) -c $(paths) $(occaSPath)/occaKernelDefines.cpp
 
-$(occaIPath)/occaKernelDefines.hpp:
+$(OCCA_DIR)/scripts/occaKernelDefinesGenerator:$(occaIPath)/occaOpenMPDefines.hpp $(occaIPath)/occaOpenCLDefines.hpp $(occaIPath)/occaCUDADefines.hpp
 	$(compiler) -o $(OCCA_DIR)/scripts/occaKernelDefinesGenerator $(OCCA_DIR)/scripts/occaKernelDefinesGenerator.cpp
+
+$(occaIPath)/occaKernelDefines.hpp:$(OCCA_DIR)/scripts/occaKernelDefinesGenerator
 	$(OCCA_DIR)/scripts/occaKernelDefinesGenerator
 
 clean:
