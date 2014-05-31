@@ -25,12 +25,13 @@
 #define occaInnerId0  (get_local_id(0))
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaGlobalDim2 (get_global_size(2))
+#define occaGlobalId2  (get_global_id(2))
+
 #define occaGlobalDim1 (get_global_size(1))
+#define occaGlobalId1  (get_global_id(1))
+
 #define occaGlobalDim0 (get_global_size(0))
-// - - - - - - - - - - - - - - - - - - - - - - - -
-#define occaGlobalId2 (get_global_id(2))
-#define occaGlobalId1 (get_global_id(1))
-#define occaGlobalId0 (get_global_id(0))
+#define occaGlobalId0  (get_global_id(0))
 //================================================
 
 
@@ -38,14 +39,14 @@
 #define occaOuterFor2
 #define occaOuterFor1
 #define occaOuterFor0
-#define occaOuterFor occaOuterFor2 occaOuterFor1 occaOuterFor0
+#define occaOuterFor
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaInnerFor2
 #define occaInnerFor1
 #define occaInnerFor0
-#define occaInnerFor occaInnerFor2 occaInnerFor1 occaInnerFor0
+#define occaInnerFor
 // - - - - - - - - - - - - - - - - - - - - - - - -
-#define occaGlobalFor0 occaOuterFor0 occaInnerFor0
+#define occaGlobalFor0
 //================================================
 
 

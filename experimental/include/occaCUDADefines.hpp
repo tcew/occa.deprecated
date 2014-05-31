@@ -24,8 +24,13 @@
 #define occaInnerDim0 blockDim.x
 #define occaInnerId0  threadIdx.x
 // - - - - - - - - - - - - - - - - - - - - - - - -
+#define occaGlobalDim2 (occaInnerDim2 * occaOuterDim2)
 #define occaGlobalId2 (occaOuterId2*occaInnerDim2 + occaInnerId2)
+
+#define occaGlobalDim1 (occaInnerDim1 * occaOuterDim1)
 #define occaGlobalId1 (occaOuterId1*occaInnerDim1 + occaInnerId1)
+
+#define occaGlobalDim0 (occaInnerDim0 * occaOuterDim0)
 #define occaGlobalId0 (occaOuterId0*occaInnerDim0 + occaInnerId0)
 //================================================
 
@@ -34,16 +39,22 @@
 #define occaOuterFor2
 #define occaOuterFor1
 #define occaOuterFor0
+#define occaOuterFor
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaInnerFor2
 #define occaInnerFor1
 #define occaInnerFor0
+#define occaInnerFor
+// - - - - - - - - - - - - - - - - - - - - - - - -
+#define occaGlobalFor0
 //================================================
 
 
 //---[ Standard Functions ]-----------------------
-#define occaLocalBarrier()  __synchthreads()
-#define occaGlobalBarrier() __synchthreads()
+#define occaLocalMemFence
+#define occaGlobalMemFence
+
+#define occaBarrier(FENCE) __synchthreads()
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaContinue return
 //================================================
@@ -56,6 +67,7 @@
 #define occaRestrict __restrict__
 #define occaVolatile __volatile__
 #define occaAligned
+#define occaFunctionShared __shared__
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaConst    const
 #define occaConstant __constant__
@@ -73,9 +85,9 @@
 //================================================
 
 
-//---[ Register ]---------------------------------
-#define occaRegisterArray( TYPE , NAME , SIZE ) TYPE NAME[SIZE]
-#define occaRegister( TYPE , NAME )             TYPE NAME
+//---[ Private ]---------------------------------
+#define occaPrivateArray( TYPE , NAME , SIZE ) TYPE NAME[SIZE]
+#define occaPrivate( TYPE , NAME )             TYPE NAME
 //================================================
 
 #endif

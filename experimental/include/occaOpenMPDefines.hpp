@@ -34,9 +34,14 @@ typedef struct occaArgs_t_ { int data[12]; } occaArgs_t;
 #define occaInnerDim0 occaArgs.data[10]
 #define occaInnerId0  occaArgs.data[11]
 // - - - - - - - - - - - - - - - - - - - - - - - -
-#define occaGlobalId2 (occaOuterId2*occaInnerDim2 + occaInnerId2)
-#define occaGlobalId1 (occaOuterId1*occaInnerDim1 + occaInnerId1)
-#define occaGlobalId0 (occaOuterId0*occaInnerDim0 + occaInnerId0)
+#define occaGlobalDim2 (occaInnerDim2 * occaOuterDim2)
+#define occaGlobalId2  (occaOuterId2*occaInnerDim2 + occaInnerId2)
+
+#define occaGlobalDim1 (occaInnerDim1 * occaOuterDim1)
+#define occaGlobalId1  (occaOuterId1*occaInnerDim1 + occaInnerId1)
+
+#define occaGlobalDim0 (occaInnerDim0 * occaOuterDimd0)
+#define occaGlobalId0  (occaOuterId0*occaInnerDim0 + occaInnerId0)
 //================================================
 
 
@@ -52,16 +57,22 @@ typedef struct occaArgs_t_ { int data[12]; } occaArgs_t;
 #  define occaOuterFor0                                         \
   for(occaOuterId0 = 0; occaOuterId0 < occaOuterDim0; ++occaOuterId0)
 #endif
+#define occaOuterFor occaOuterFor2 occaOuterFor1 occaOuterFor0
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaInnerFor2 for(occaInnerId2 = 0; occaInnerId2 < occaInnerDim2; ++occaInnerId2)
 #define occaInnerFor1 for(occaInnerId1 = 0; occaInnerId1 < occaInnerDim1; ++occaInnerId1)
 #define occaInnerFor0 for(occaInnerId0 = 0; occaInnerId0 < occaInnerDim0; ++occaInnerId0)
+#define occaInnerFor occaInnerFor2 occaInnerFor1 occaInnerFor0
+// - - - - - - - - - - - - - - - - - - - - - - - -
+#define occaGlobalFor0 occaOuterFor0 occaInnerFor0
 //================================================
 
 
 //---[ Standard Functions ]-----------------------
-#define occaLocalBarrier()
-#define occaGlobalBarrier()
+#define occaLocalMemFence
+#define occaGlobalMemFence
+
+#define occaBarrier(FENCE)
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaContinue continue
 //================================================
@@ -74,6 +85,7 @@ typedef struct occaArgs_t_ { int data[12]; } occaArgs_t;
 #define occaRestrict __restrict__
 #define occaVolatile volatile
 #define occaAligned  __attribute__ ((aligned (OCCA_MEM_ALIGN)))
+#define occaFunctionShared
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaConst    const
 #define occaConstant const
@@ -91,9 +103,9 @@ typedef struct occaArgs_t_ { int data[12]; } occaArgs_t;
 //================================================
 
 
-//---[ Register ]---------------------------------
+//---[ Private ]---------------------------------
 template <class TM, const int SIZE>
-class occaRegister_t {
+class occaPrivate_t {
 private:
 
 public:
@@ -101,58 +113,58 @@ public:
 
   TM data[OCCA_MAX_THREADS][SIZE] occaAligned;
 
-  occaRegister_t(occaArgs_t &occaArgs_) :
+  occaPrivate_t(occaArgs_t &occaArgs_) :
     occaArgs(occaArgs_) {}
 
-  ~occaRegister_t(){}
+  ~occaPrivate_t(){}
 
-#define OCCA_REGISTER_ID                                        \
+#define OCCA_PRIVATE_ID                                        \
   (occaInnerId2*occaInnerDim1 + occaInnerId1)*occaInnerDim0 + occaInnerId0
 
   inline TM& operator [] (const int n){
-    return data[OCCA_REGISTER_ID][n];
+    return data[OCCA_PRIVATE_ID][n];
   }
 
   inline operator TM(){
-    return data[OCCA_REGISTER_ID][0];
+    return data[OCCA_PRIVATE_ID][0];
   }
 
-  inline occaRegister_t& operator = (const occaRegister_t &r) {
-    const int id = OCCA_REGISTER_ID;
+  inline occaPrivate_t& operator = (const occaPrivate_t &r) {
+    const int id = OCCA_PRIVATE_ID;
     data[id][0] = r.data[id][0];
   }
 
-  inline occaRegister_t<TM,SIZE> & operator = (const TM &t){
-    data[OCCA_REGISTER_ID][0] = t;
+  inline occaPrivate_t<TM,SIZE> & operator = (const TM &t){
+    data[OCCA_PRIVATE_ID][0] = t;
     return *this;
   }
 
-  inline occaRegister_t<TM,SIZE> & operator += (const TM &t){
-    data[OCCA_REGISTER_ID][0] += t;
+  inline occaPrivate_t<TM,SIZE> & operator += (const TM &t){
+    data[OCCA_PRIVATE_ID][0] += t;
     return *this;
   }
 
-  inline occaRegister_t<TM,SIZE> & operator -= (const TM &t){
-    data[OCCA_REGISTER_ID][0] -= t;
+  inline occaPrivate_t<TM,SIZE> & operator -= (const TM &t){
+    data[OCCA_PRIVATE_ID][0] -= t;
     return *this;
   }
 
-  inline occaRegister_t<TM,SIZE> & operator /= (const TM &t){
-    data[OCCA_REGISTER_ID][0] /= t;
+  inline occaPrivate_t<TM,SIZE> & operator /= (const TM &t){
+    data[OCCA_PRIVATE_ID][0] /= t;
     return *this;
   }
 
-  inline occaRegister_t<TM,SIZE> & operator *= (const TM &t){
-    data[OCCA_REGISTER_ID][0] *= t;
+  inline occaPrivate_t<TM,SIZE> & operator *= (const TM &t){
+    data[OCCA_PRIVATE_ID][0] *= t;
     return *this;
   }
 };
 
-#define occaRegisterArray( TYPE , NAME , SIZE )   \
-  occaRegister_t<TYPE,SIZE> NAME(occaArgs);
+#define occaPrivateArray( TYPE , NAME , SIZE )   \
+  occaPrivate_t<TYPE,SIZE> NAME(occaArgs);
 
-#define occaRegister( TYPE , NAME )               \
-  occaRegister_t<TYPE,1> NAME(occaArgs);
+#define occaPrivate( TYPE , NAME )               \
+  occaPrivate_t<TYPE,1> NAME(occaArgs);
 //================================================
 
 #endif
