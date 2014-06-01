@@ -51,20 +51,20 @@ namespace occa {
     char *c_cachePath = getenv("OCCA_CACHE_DIR");
     OCCA_CHECK(c_cachePath != NULL);
 
-    std::string oclCachePath(c_cachePath);
+    std::string occaCachePath(c_cachePath);
 
-    OCCA_CHECK(oclCachePath.size() > 0);
+    OCCA_CHECK(occaCachePath.size() > 0);
 
 
-    if(oclCachePath[oclCachePath.size() - 1] != '/')
-      oclCachePath += '/';
+    if(occaCachePath[occaCachePath.size() - 1] != '/')
+      occaCachePath += '/';
     //================================
 
     const std::string fileContents = readFile(filename);
     const std::string contentsSHA  = fnv(fileContents + salt);
 
     // Only taking the first 16 characters
-    return oclCachePath + contentsSHA.substr(0, 16);
+    return occaCachePath + contentsSHA.substr(0, 16);
   }
 
   std::string createIntermediateSource(const std::string &filename,

@@ -3,8 +3,8 @@
 // Use events for timing!
 
 namespace occa {
-  std::string ompCompiler , ompCompilerFlags;
-  std::string cudaCompiler, cudaArch, cudaCompilerFlags;
+  std::string ompCompiler = "g++", ompCompilerFlags = "";
+  std::string cudaCompiler = "nvcc", cudaArch = "", cudaCompilerFlags = "";
 
   kernelInfo defaultKernelInfo;
 
@@ -177,12 +177,12 @@ namespace occa {
     mode_ = m;
 
     switch(m){
-    case OpenMP: dHandle = new device_t<OpenMP>; break;
+    case OpenMP: dHandle = new device_t<OpenMP>(); break;
 #if OCCA_OPENCL_ENABLED
-    case OpenCL: dHandle = new device_t<OpenCL>; break;
+    case OpenCL: dHandle = new device_t<OpenCL>(); break;
 #endif
 #if OCCA_CUDA_ENABLED
-    case CUDA:   dHandle = new device_t<CUDA>; break;
+    case CUDA:   dHandle = new device_t<CUDA>(); break;
 #endif
     default:
       OCCA_CHECK(false);

@@ -54,7 +54,7 @@
 #define occaLocalMemFence
 #define occaGlobalMemFence
 
-#define occaBarrier(FENCE) __synchthreads()
+#define occaBarrier(FENCE) __syncthreads()
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaContinue return
 //================================================
@@ -67,7 +67,7 @@
 #define occaRestrict __restrict__
 #define occaVolatile __volatile__
 #define occaAligned
-#define occaFunctionShared __shared__
+#define occaFunctionShared
 // - - - - - - - - - - - - - - - - - - - - - - - -
 #define occaConst    const
 #define occaConstant __constant__

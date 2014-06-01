@@ -12,6 +12,14 @@
 #define OCCA_MEM_ALIGN   16
 
 typedef struct occaArgs_t_ { int data[12]; } occaArgs_t;
+
+typedef struct float2_t { float  x,y;     } float2;
+typedef struct float3_t { float  x,y,z;   } float3;
+typedef struct float4_t { float  x,y,z,w; } float4;
+
+typedef struct double2_t { double  x,y;     } double2;
+typedef struct double3_t { double  x,y,z;   } double3;
+typedef struct double4_t { double  x,y,z,w; } double4;
 //================================================
 
 
@@ -40,7 +48,7 @@ typedef struct occaArgs_t_ { int data[12]; } occaArgs_t;
 #define occaGlobalDim1 (occaInnerDim1 * occaOuterDim1)
 #define occaGlobalId1  (occaOuterId1*occaInnerDim1 + occaInnerId1)
 
-#define occaGlobalDim0 (occaInnerDim0 * occaOuterDimd0)
+#define occaGlobalDim0 (occaInnerDim0 * occaOuterDim0)
 #define occaGlobalId0  (occaOuterId0*occaInnerDim0 + occaInnerId0)
 //================================================
 

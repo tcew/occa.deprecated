@@ -99,9 +99,12 @@ namespace occa {
 
     command << dev->cudaCompiler
             << " -o "       << cachedBinary
-            << " -ptx -I."
-            << " -arch=sm_" << dev->cudaArch
-            << ' '          << dev->cudaCompilerFlags
+            << " -ptx -I.";
+
+    if(dev->cudaArch != "")
+      command << " -arch=sm_" << dev->cudaArch;
+
+    command << ' '          << dev->cudaCompilerFlags
             << ' '          << info.flags
             << " -x cu "    << iCachedBinary;
 
