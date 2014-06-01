@@ -177,15 +177,28 @@ namespace occa {
     mode_ = m;
 
     switch(m){
-    case OpenMP: dHandle = new device_t<OpenMP>(); break;
+    case OpenMP:
+      dHandle = new device_t<OpenMP>(); break;
+
+    case OpenCL:
 #if OCCA_OPENCL_ENABLED
-    case OpenCL: dHandle = new device_t<OpenCL>(); break;
+     dHandle = new device_t<OpenCL>(); break;
+#else
+     std::cout << "OCCA mode [OpenCL] is not enabled\n";
+     throw 1;
 #endif
+
+    case CUDA:
 #if OCCA_CUDA_ENABLED
-    case CUDA:   dHandle = new device_t<CUDA>(); break;
+      dHandle = new device_t<CUDA>(); break;
+#else
+     std::cout << "OCCA mode [CUDA] is not enabled\n";
+     throw 1;
 #endif
+
     default:
-      OCCA_CHECK(false);
+      std::cout << "Incorrect OCCA mode given\n";
+      throw 1;
     }
 
     dHandle->dev = this;
