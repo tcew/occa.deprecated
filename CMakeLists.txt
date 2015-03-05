@@ -8,6 +8,11 @@ include(CheckIncludeFileCXX)
 include(CheckCXXSymbolExists)
 include(CMakePushCheckState)
 
+# build options : default all ON
+option(WITH_CPU    "Build CPU    back-end?" ON)
+option(WITH_OPENCL "Build OPENCL back-end?" ON)
+option(WITH_CUDA   "Build CUDA   back-end?" ON)
+
 # Directory where customize cmake files reside
 set(CMAKE_MODULE_PATH
   ${CMAKE_SOURCE_DIR}/cmake/findopencl ${CMAKE_MODULE_PATH}
@@ -15,8 +20,14 @@ set(CMAKE_MODULE_PATH
 
 find_package(Git)
 find_package(OpenMP)
-find_package(OpenCL)
-find_package(CUDA)
+
+if(WITH_OPENCL)
+  find_package(OpenCL)
+endif(WITH_OPENCL)
+
+if(WITH_CUDA)
+  find_package(CUDA)
+endif(WITH_CUDA)
 
 ##
 ## Customize CMake defaults
@@ -91,6 +102,8 @@ if(WITH_OPENCL)
     message("Warning: Not building the OpenCL backend")
     add_definitions( -DOCCA_USE_OPENCL=0 )
   endif(OPENCL_FOUND)
+else(WITH_OPENCL)
+    add_definitions( -DOCCA_USE_OPENCL=0 )
 endif(WITH_OPENCL)
 
 ##

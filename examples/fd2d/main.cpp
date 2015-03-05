@@ -49,7 +49,9 @@ void drawMesh();
 #endif
 
 int main(int argc, char **argv){
+#if OCCA_USE_OPENCL==1
   cl_list_all_devices();
+#endif
 
 #if COMPILED_WITH_GL
   vis.setup("OCL Visualizer", argc, argv);
